@@ -1,1 +1,21 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container"><h1 class="h2 text-slate">My Certificates</h1>{% for certificate in certificates %}<div class="dashboard-card mb-2"><strong>{{ certificate.course.title }}</strong><span>{{ certificate.certificate_id }}</span><a class="btn btn-sm btn-outline-primary float-end" href="{% url 'certificates:detail' certificate.certificate_id %}">Open</a></div>{% empty %}<div class="empty-state">No certificates earned yet.</div>{% endfor %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}My Certificates | Acadeval{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <h1 class="h2 text-slate">My Certificates</h1>
+    {% for certificate in certificates %}
+      <div class="dashboard-card mb-2">
+        <strong>{{ certificate.course.title }}</strong>
+        <span>{{ certificate.certificate_id }}</span>
+        <div class="float-end d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'certificates:detail' certificate.certificate_id %}">Open</a>
+          <a class="btn btn-sm btn-primary" href="{% url 'certificates:download' certificate.certificate_id %}">Download</a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">No certificates earned yet.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

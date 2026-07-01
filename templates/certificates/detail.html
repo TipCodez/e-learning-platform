@@ -1,1 +1,19 @@
-﻿{% extends "base.html" %}{% block content %}<section class="page-hero"><div class="container narrow text-center"><span class="eyebrow">Certificate of Completion</span><h1 class="display-6 fw-bold text-slate">{{ certificate.course.title }}</h1><p class="lead">Awarded to {{ certificate.student.get_full_name|default:certificate.student.username }}</p><p>ID: {{ certificate.certificate_id }}</p><a class="btn btn-primary" href="{% url 'certificates:verify' certificate.certificate_id %}">Public Verification</a></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Certificate | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow text-center">
+    <span class="eyebrow">Certificate of Completion</span>
+    <h1 class="display-6 fw-bold text-slate">{{ certificate.course.title }}</h1>
+    <p class="lead">Awarded to {{ certificate.student.get_full_name|default:certificate.student.username }}</p>
+    <p>ID: {{ certificate.certificate_id }}</p>
+    {% if certificate.qr_code %}
+      <img src="{{ certificate.qr_code.url }}" alt="Certificate QR code" class="my-3" style="width: 120px; height: 120px;">
+    {% endif %}
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <a class="btn btn-primary" href="{% url 'certificates:download' certificate.certificate_id %}">Download PDF</a>
+      <a class="btn btn-outline-primary" href="{% url 'certificates:verify' certificate.certificate_id %}">Public Verification</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
