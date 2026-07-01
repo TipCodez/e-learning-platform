@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect, render
 
-from accounts.forms import ProfileForm, RegisterForm
+from accounts.forms import EmailAuthenticationForm, ProfileForm, RegisterForm
 from accounts.tokens import send_verification_email, token_error_message, verify_email_token
 
 
@@ -27,6 +27,7 @@ def register(request):
 
 
 class AcadevalLoginView(LoginView):
+    authentication_form = EmailAuthenticationForm
     template_name = "accounts/login.html"
     redirect_authenticated_user = True
 

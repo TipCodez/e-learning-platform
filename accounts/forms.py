@@ -1,8 +1,26 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.text import slugify
 
 from accounts.models import CustomUser
+
+
+class EmailAuthenticationForm(AuthenticationForm):
+    username = forms.EmailField(
+        label="Email address",
+        widget=forms.EmailInput(
+            attrs={
+                "autocomplete": "email",
+                "autofocus": True,
+                "placeholder": "you@example.com",
+            }
+        ),
+    )
+
+    error_messages = {
+        "invalid_login": "Please enter a correct email address and password.",
+        "inactive": "This account is inactive.",
+    }
 
 
 class RegisterForm(UserCreationForm):
