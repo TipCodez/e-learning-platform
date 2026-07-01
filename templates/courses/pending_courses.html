@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Pending Course Approvals | Acadeval{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <span class="eyebrow">Admin moderation</span>
+    <h1 class="h2 text-slate mb-4">Pending Course Approvals</h1>
+    {% for course in courses %}
+      <div class="dashboard-card mb-3">
+        <div class="d-flex flex-wrap justify-content-between gap-3">
+          <div>
+            <strong>{{ course.title }}</strong>
+            <span>{{ course.instructor }} • {{ course.category|default:"Uncategorized" }}</span>
+            <p class="mb-0">{{ course.description|truncatewords:24 }}</p>
+          </div>
+          <div class="d-flex flex-column gap-2">
+            <a class="btn btn-sm btn-outline-primary" href="{{ course.get_absolute_url }}">Review</a>
+            <form method="post" action="{% url 'courses:approve' course.slug %}">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-success w-100">Approve</button>
+            </form>
+            <form method="post" action="{% url 'courses:reject' course.slug %}">
+              {% csrf_token %}
+              <input class="form-control form-control-sm mb-2" name="reason" placeholder="Feedback">
+              <button class="btn btn-sm btn-danger w-100">Reject</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">No pending courses.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 
 from courses.forms import CourseForm, LessonForm, ModuleForm, ReviewForm
@@ -14,19 +15,41 @@ def course_list(request):
     query = request.GET.get("q", "")
     category = request.GET.get("category", "")
     level = request.GET.get("level", "")
+    price = request.GET.get("price", "")
     if query:
         courses = courses.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if category:
         courses = courses.filter(category__slug=category)
     if level:
         courses = courses.filter(level=level)
+    if price == "free":
+        courses = courses.filter(is_free=True)
+    elif price == "paid":
+        courses = courses.filter(is_free=False)
     paginator = Paginator(courses, 9)
     page = paginator.get_page(request.GET.get("page"))
-    return render(request, "courses/course_list.html", {"page": page, "categories": Category.objects.filter(is_active=True), "query": query})
+    return render(
+        request,
+        "courses/course_list.html",
+        {
+            "page": page,
+            "categories": Category.objects.filter(is_active=True),
+            "levels": Course.Level.choices,
+            "query": query,
+            "selected_category": category,
+            "selected_level": level,
+            "selected_price": price,
+        },
+    )
 
 
 def course_detail(request, slug):
     course = get_object_or_404(Course.objects.select_related("instructor", "category").prefetch_related("modules__lessons", "reviews"), slug=slug)
+    if not course.is_published:
+        can_preview = request.user.is_authenticated and (course.instructor == request.user or request.user.is_platform_admin)
+        if not can_preview:
+            messages.error(request, "This course is not published yet.")
+            return redirect("courses:list")
     enrollment = None
     if request.user.is_authenticated:
         enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
@@ -36,6 +59,15 @@ def course_detail(request, slug):
 
 def categories(request):
     return render(request, "courses/categories.html", {"categories": Category.objects.prefetch_related("subcategories").filter(is_active=True)})
+
+
+@login_required
+def instructor_courses(request):
+    if not (request.user.is_instructor or request.user.is_platform_admin):
+        messages.error(request, "Instructor access required.")
+        return redirect("dashboards:home")
+    courses = Course.objects.filter(instructor=request.user).select_related("category").order_by("-created_at")
+    return render(request, "courses/instructor_courses.html", {"courses": courses})
 
 
 @login_required
@@ -75,6 +107,61 @@ def edit_course(request, slug):
 
 
 @login_required
+def submit_for_approval(request, slug):
+    course = get_object_or_404(Course, slug=slug)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "You cannot submit this course.")
+        return redirect("courses:detail", slug=slug)
+    course.status = Course.Status.PENDING
+    course.rejection_reason = ""
+    course.save(update_fields=["status", "rejection_reason", "updated_at"])
+    messages.success(request, "Course submitted for approval.")
+    return redirect("courses:instructor_courses")
+
+
+@login_required
+def pending_courses(request):
+    if not request.user.is_platform_admin:
+        messages.error(request, "Admin access required.")
+        return redirect("dashboards:home")
+    courses = Course.objects.select_related("instructor", "category").filter(status=Course.Status.PENDING)
+    return render(request, "courses/pending_courses.html", {"courses": courses})
+
+
+@login_required
+def approve_course(request, slug):
+    if not request.user.is_platform_admin:
+        messages.error(request, "Admin access required.")
+        return redirect("dashboards:home")
+    if request.method != "POST":
+        messages.error(request, "Approval must be submitted from the moderation form.")
+        return redirect("courses:pending")
+    course = get_object_or_404(Course, slug=slug)
+    course.status = Course.Status.PUBLISHED
+    course.approved_at = timezone.now()
+    course.rejection_reason = ""
+    course.save(update_fields=["status", "approved_at", "rejection_reason", "updated_at"])
+    messages.success(request, "Course approved and published.")
+    return redirect("courses:pending")
+
+
+@login_required
+def reject_course(request, slug):
+    if not request.user.is_platform_admin:
+        messages.error(request, "Admin access required.")
+        return redirect("dashboards:home")
+    if request.method != "POST":
+        messages.error(request, "Rejection must be submitted from the moderation form.")
+        return redirect("courses:pending")
+    course = get_object_or_404(Course, slug=slug)
+    course.status = Course.Status.REJECTED
+    course.rejection_reason = request.POST.get("reason", "Needs revision.")
+    course.save(update_fields=["status", "rejection_reason", "updated_at"])
+    messages.success(request, "Course rejected with feedback.")
+    return redirect("courses:pending")
+
+
+@login_required
 def manage_modules(request, slug):
     course = get_object_or_404(Course, slug=slug)
     if course.instructor != request.user and not request.user.is_platform_admin:
@@ -111,10 +198,14 @@ def submit_review(request, slug):
     if request.method == "POST":
         form = ReviewForm(request.POST)
         if form.is_valid():
-            review = form.save(commit=False)
-            review.course = course
-            review.user = request.user
-            review.save()
+            course.reviews.update_or_create(
+                user=request.user,
+                defaults={
+                    "rating": form.cleaned_data["rating"],
+                    "comment": form.cleaned_data["comment"],
+                    "is_approved": True,
+                },
+            )
             messages.success(request, "Thanks for reviewing this course.")
     return redirect("courses:detail", slug=slug)
 
