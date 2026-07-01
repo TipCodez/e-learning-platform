@@ -1,1 +1,43 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container"><div class="d-flex justify-content-between"><h1 class="h2 text-slate">Community</h1>{% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'discussions:create' %}">Ask Question</a>{% endif %}</div>{% for discussion in discussions %}<div class="dashboard-card mb-2"><strong>{{ discussion.title }}</strong><p>{{ discussion.body|truncatewords:20 }}</p><a href="{% url 'discussions:detail' discussion.id %}">Open discussion</a></div>{% empty %}<div class="empty-state">No discussions yet.</div>{% endfor %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+      <h1 class="h2 text-slate">Community</h1>
+      <a class="btn btn-primary" href="{% url 'courses:list' %}">Choose Course</a>
+    </div>
+
+    <form class="row g-2 my-3">
+      <div class="col-md-5"><input class="form-control" name="q" value="{{ query }}" placeholder="Search discussions"></div>
+      <div class="col-md-5">
+        <select class="form-select" name="course">
+          <option value="">All courses</option>
+          {% for course in courses %}
+            <option value="{{ course.slug }}" {% if selected_course == course.slug %}selected{% endif %}>{{ course.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+
+    {% for discussion in discussions %}
+      <div class="dashboard-card mb-2">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+          <div>
+            <strong>{{ discussion.title }}</strong>
+            <div class="text-muted">{{ discussion.course.title }}{% if discussion.lesson %} - {{ discussion.lesson.title }}{% endif %}</div>
+            <p>{{ discussion.body|truncatewords:24 }}</p>
+          </div>
+          <div class="text-md-end">
+            <div>{{ discussion.vote_count }} upvotes</div>
+            <div>{{ discussion.reply_count }} replies</div>
+            <a href="{% url 'discussions:detail' discussion.id %}">Open discussion</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">No discussions yet.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

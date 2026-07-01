@@ -1,1 +1,52 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container narrow"><h1 class="h2 text-slate">{{ discussion.title }}</h1><p>{{ discussion.body }}</p><hr>{% for reply in discussion.replies.all %}<div class="dashboard-card mb-2"><strong>{{ reply.author.username }}</strong>{% if reply.is_instructor_reply %}<span class="badge text-bg-success">Instructor</span>{% endif %}<p>{{ reply.body }}</p></div>{% endfor %}{% if user.is_authenticated %}<form method="post" action="{% url 'discussions:reply' discussion.id %}" class="dashboard-card mt-3">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Reply</button></form>{% endif %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container narrow">
+    <span class="eyebrow">{{ discussion.course.title }}</span>
+    <h1 class="h2 text-slate">{{ discussion.title }}</h1>
+    {% if discussion.lesson %}<p class="text-muted">{{ discussion.lesson.title }}</p>{% endif %}
+    <p>{{ discussion.body|linebreaks }}</p>
+    <div class="d-flex gap-2 align-items-center">
+      <span>{{ discussion.upvotes }} upvotes</span>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'discussions:vote' discussion.id %}">
+          {% csrf_token %}
+          <button class="btn btn-outline-primary btn-sm" type="submit">{% if has_voted %}Remove Upvote{% else %}Upvote{% endif %}</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <hr>
+    {% for reply in discussion.replies.all %}
+      <div class="dashboard-card mb-2">
+        <strong>{{ reply.author.get_full_name|default:reply.author.email }}</strong>
+        {% if reply.is_instructor_reply %}<span class="badge text-bg-success">Instructor</span>{% endif %}
+        <p>{{ reply.body|linebreaks }}</p>
+      </div>
+    {% empty %}
+      <div class="empty-state">No replies yet.</div>
+    {% endfor %}
+
+    {% if can_participate %}
+      <form method="post" action="{% url 'discussions:reply' discussion.id %}" class="dashboard-card mt-3">
+        {% csrf_token %}
+        <h2 class="h5 text-slate">Reply</h2>
+        {{ form.body }}
+        {% if form.body.errors %}<div class="text-danger small">{{ form.body.errors|join:", " }}</div>{% endif %}
+        <button class="btn btn-primary mt-3" type="submit">Reply</button>
+      </form>
+    {% elif user.is_authenticated %}
+      <div class="empty-state mt-3">Enroll in this course to reply.</div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'discussions:report' discussion.id %}" class="dashboard-card mt-3">
+        {% csrf_token %}
+        <h2 class="h6 text-slate">Report Discussion</h2>
+        {{ report_form.reason }}
+        <button class="btn btn-outline-primary mt-3" type="submit">Submit Report</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

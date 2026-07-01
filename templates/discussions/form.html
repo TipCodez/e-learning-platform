@@ -1,1 +1,21 @@
-﻿{% extends "base.html" %}{% block content %}<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Start Discussion</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Post</button></form></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card wide">
+    <h1 class="h2 text-slate">Start Discussion</h1>
+    {% if course %}<p class="text-muted">{{ course.title }}</p>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <label class="form-label" for="{{ form.lesson.id_for_label }}">Lesson</label>
+      {{ form.lesson }}
+      <label class="form-label mt-3" for="{{ form.title.id_for_label }}">Title</label>
+      {{ form.title }}
+      {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors|join:", " }}</div>{% endif %}
+      <label class="form-label mt-3" for="{{ form.body.id_for_label }}">Question</label>
+      {{ form.body }}
+      {% if form.body.errors %}<div class="text-danger small">{{ form.body.errors|join:", " }}</div>{% endif %}
+      <button class="btn btn-primary mt-3" type="submit">Post</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

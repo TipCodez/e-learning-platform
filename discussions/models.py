@@ -20,6 +20,16 @@ class Discussion(models.Model):
         return self.title
 
 
+class DiscussionVote(models.Model):
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="votes")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="discussion_votes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("discussion", "user")
+        ordering = ["-created_at"]
+
+
 class DiscussionReply(models.Model):
     discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="replies")
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="discussion_replies")
@@ -30,6 +40,18 @@ class DiscussionReply(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
+
+class DiscussionReport(models.Model):
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="reports")
+    reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="discussion_reports")
+    reason = models.CharField(max_length=220)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("discussion", "reported_by")
+        ordering = ["-created_at"]
 
 
 class Announcement(models.Model):
