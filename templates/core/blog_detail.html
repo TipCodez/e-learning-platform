@@ -25,14 +25,14 @@
           {% elif block.block_type == "code" %}
             <div class="code-block" data-code-block>
               <div class="code-toolbar">
-                <span>{{ block.code_language|default:"code" }}</span>
-                <button class="btn btn-sm btn-outline-primary" type="button" data-copy-code>Copy</button>
+                <span class="code-language">{{ block.code_language|default:"code" }}</span>
+                <button class="code-copy-button" type="button" data-copy-code aria-label="Copy code">Copy</button>
               </div>
               <pre><code>{{ block.body }}</code></pre>
             </div>
           {% elif block.block_type == "output" %}
             <div class="output-block">
-              {% if block.title %}<strong>{{ block.title }}</strong>{% endif %}
+              <div class="output-heading"><span class="output-icon">&gt;_</span><strong>{{ block.title|default:"Output" }}</strong></div>
               <pre>{{ block.body }}</pre>
             </div>
           {% elif block.block_type == "screenshot" %}
