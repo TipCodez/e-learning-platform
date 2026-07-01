@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.utils.text import slugify
 
 from accounts.models import CustomUser
 
@@ -21,7 +22,6 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = [
-            "username",
             "first_name",
             "last_name",
             "email",
@@ -32,6 +32,31 @@ class RegisterForm(UserCreationForm):
             "password1",
             "password2",
         ]
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+    def _unique_username(self, email):
+        base = slugify(email.split("@")[0]).replace("-", "_") or "learner"
+        base = base[:140]
+        username = base
+        counter = 2
+        while CustomUser.objects.filter(username=username).exists():
+            suffix = f"_{counter}"
+            username = f"{base[:150 - len(suffix)]}{suffix}"
+            counter += 1
+        return username
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        user.username = self._unique_username(user.email)
+        if commit:
+            user.save()
+        return user
 
 
 class ProfileForm(forms.ModelForm):
