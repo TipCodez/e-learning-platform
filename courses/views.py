@@ -6,8 +6,8 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from courses.forms import CourseForm, LessonForm, ModuleForm, ReviewForm
-from courses.models import Category, Course, Lesson, LessonNote, Module, WishlistItem
+from courses.forms import CourseForm, LessonContentBlockForm, LessonForm, ModuleForm, ReviewForm
+from courses.models import Category, Course, Lesson, LessonContentBlock, LessonNote, Module, WishlistItem
 from enrollments.models import CourseProgress, Enrollment, LessonProgress
 from gamification.services import record_course_completion, record_lesson_completion
 
@@ -202,7 +202,55 @@ def manage_lessons(request, slug):
         form.save()
         messages.success(request, "Lesson saved.")
         return redirect("courses:manage_lessons", slug=slug)
-    return render(request, "courses/manage_lessons.html", {"course": course, "form": form})
+    lessons = Lesson.objects.select_related("module").prefetch_related("content_blocks").filter(module__course=course)
+    return render(request, "courses/manage_lessons.html", {"course": course, "form": form, "lessons": lessons})
+
+
+@login_required
+def manage_lesson_blocks(request, slug, lesson_id):
+    course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson.objects.prefetch_related("content_blocks"), pk=lesson_id, module__course=course)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "You cannot manage this lesson content.")
+        return redirect("courses:detail", slug=slug)
+    form = LessonContentBlockForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        block = form.save(commit=False)
+        block.lesson = lesson
+        block.save()
+        messages.success(request, "Content block added.")
+        return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
+    return render(request, "courses/manage_lesson_blocks.html", {"course": course, "lesson": lesson, "form": form})
+
+
+@login_required
+def edit_lesson_block(request, slug, lesson_id, block_id):
+    course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    block = get_object_or_404(LessonContentBlock, pk=block_id, lesson=lesson)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "You cannot edit this content block.")
+        return redirect("courses:detail", slug=slug)
+    form = LessonContentBlockForm(request.POST or None, request.FILES or None, instance=block)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Content block updated.")
+        return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
+    return render(request, "courses/lesson_block_form.html", {"course": course, "lesson": lesson, "block": block, "form": form})
+
+
+@login_required
+@require_POST
+def delete_lesson_block(request, slug, lesson_id, block_id):
+    course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    block = get_object_or_404(LessonContentBlock, pk=block_id, lesson=lesson)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "You cannot delete this content block.")
+        return redirect("courses:detail", slug=slug)
+    block.delete()
+    messages.success(request, "Content block deleted.")
+    return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
 
 
 @login_required

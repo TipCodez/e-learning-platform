@@ -1,6 +1,6 @@
 from django import forms
 
-from courses.models import Course, Lesson, Module, Review
+from courses.models import Course, Lesson, LessonContentBlock, Module, Review
 
 
 class CourseForm(forms.ModelForm):
@@ -42,6 +42,38 @@ class LessonForm(forms.ModelForm):
         model = Lesson
         fields = ["module", "title", "lesson_type", "content", "video_url", "external_url", "file", "order", "duration_minutes", "is_preview"]
         widgets = {"content": forms.Textarea(attrs={"rows": 6})}
+
+
+class LessonContentBlockForm(forms.ModelForm):
+    class Meta:
+        model = LessonContentBlock
+        fields = [
+            "block_type",
+            "order",
+            "title",
+            "subtitle",
+            "body",
+            "code_language",
+            "image",
+            "image_alt",
+            "table_data",
+        ]
+        widgets = {
+            "block_type": forms.Select(attrs={"class": "form-select"}),
+            "order": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "subtitle": forms.TextInput(attrs={"class": "form-control"}),
+            "body": forms.Textarea(attrs={"class": "form-control", "rows": 6}),
+            "code_language": forms.TextInput(attrs={"class": "form-control", "placeholder": "python, bash, html"}),
+            "image_alt": forms.TextInput(attrs={"class": "form-control"}),
+            "table_data": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 5,
+                    "placeholder": "Header A|Header B\nValue A|Value B",
+                }
+            ),
+        }
 
 
 class ReviewForm(forms.ModelForm):

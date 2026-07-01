@@ -1,2 +1,43 @@
-﻿{% extends "base.html" %}
-{% block content %}<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Manage Lessons: {{ course.title }}</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Lesson</button></form></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+      <div>
+        <span class="eyebrow">Course creator</span>
+        <h1 class="h2 text-slate">Manage Lessons: {{ course.title }}</h1>
+      </div>
+      <a class="btn btn-outline-primary" href="{{ course.get_absolute_url }}">Preview Course</a>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <form class="dashboard-card" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <h2 class="h5 text-slate">Create or update lesson shell</h2>
+          {{ form.as_p }}
+          <button class="btn btn-primary" type="submit">Save Lesson</button>
+        </form>
+      </div>
+      <div class="col-lg-7">
+        {% for lesson in lessons %}
+          <div class="dashboard-card mb-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+              <div>
+                <strong>{{ lesson.title }}</strong>
+                <span>{{ lesson.module.title }} - {{ lesson.content_blocks.count }} content blocks</span>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'courses:lesson' course.slug lesson.id %}">Preview</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'courses:manage_lesson_blocks' course.slug lesson.id %}">Content Blocks</a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-state">Create a lesson first, then add rich content blocks.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
