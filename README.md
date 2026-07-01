@@ -29,6 +29,7 @@ copy .env.example .env
 python manage.py makemigrations accounts
 python manage.py migrate
 python manage.py createsuperuser
+python manage.py seed_demo
 python manage.py runserver
 ```
 
@@ -51,7 +52,8 @@ Open `http://127.0.0.1:8000/`.
 3. Visit `/accounts/register/` and create one account for each role.
 4. Confirm each role redirects to its own dashboard after login.
 5. Visit `/admin/` with a superuser and confirm users and profiles are manageable.
-6. Test password reset locally. The default email backend prints reset links to the console.
+6. Run `python manage.py seed_demo` and confirm demo courses, badges, plans, and paths appear on the public pages.
+7. Test password reset locally. The default email backend prints reset links to the console.
 
 ## Common Errors and Fixes
 
