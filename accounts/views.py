@@ -17,8 +17,8 @@ def register(request):
         if form.is_valid():
             user = form.save()
             send_verification_email(request, user)
-            login(request, user)
-            messages.success(request, "Welcome to Acadeval. Check your email for a verification link.")
+            login(request, user, backend="accounts.backends.EmailAuthenticationBackend")
+            messages.success(request, "Welcome to Acadeval. Your account is ready.")
             return redirect("accounts:profile_setup")
     else:
         form = RegisterForm()
