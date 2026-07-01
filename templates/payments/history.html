@@ -1,1 +1,30 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container"><h1 class="h2 text-slate">Payment History</h1>{% for payment in payments %}<div class="dashboard-card mb-2"><strong>{{ payment.reference }}</strong><span>{{ payment.gateway }} • {{ payment.status }} • GHS {{ payment.amount }}</span></div>{% empty %}<div class="empty-state">No payments yet.</div>{% endfor %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <h1 class="h2 text-slate">Payment History</h1>
+    {% for payment in payments %}
+      <div class="dashboard-card mb-2">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+          <div>
+            <strong>{{ payment.reference }}</strong>
+            <div class="text-muted">{{ payment.course.title|default:"Subscription" }}</div>
+            <span>{{ payment.get_gateway_display }} &middot; {{ payment.get_status_display }} &middot; GHS {{ payment.amount }}</span>
+          </div>
+          <div class="d-flex gap-2 align-items-start">
+            {% if payment.status == "pending" %}
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'payments:success' payment.reference %}">Continue</a>
+            {% endif %}
+            {% if payment.invoice %}
+              <a class="btn btn-primary btn-sm" href="{% url 'payments:invoice' payment.invoice.invoice_number %}">Invoice</a>
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'payments:invoice_download' payment.invoice.invoice_number %}">Download</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">No payments yet.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

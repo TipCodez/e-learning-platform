@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="dashboard-card">
+      <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+        <div>
+          <h1 class="h2 text-slate">Invoice</h1>
+          <p class="text-muted mb-0">{{ invoice.invoice_number }}</p>
+        </div>
+        <div class="text-md-end">
+          <strong>{{ invoice.payment.get_status_display }}</strong>
+          <div class="text-muted">{{ invoice.issued_at|date:"M d, Y H:i" }}</div>
+        </div>
+      </div>
+      <hr>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <h2 class="h6">Billed to</h2>
+          <p class="mb-0">{{ invoice.billing_name }}</p>
+          <p class="text-muted">{{ invoice.billing_email }}</p>
+        </div>
+        <div class="col-md-6">
+          <h2 class="h6">Payment</h2>
+          <p class="mb-0">{{ invoice.payment.reference }}</p>
+          <p class="text-muted">{{ invoice.payment.get_gateway_display }}</p>
+        </div>
+      </div>
+      <div class="table-responsive mt-3">
+        <table class="table">
+          <thead><tr><th>Item</th><th class="text-end">Amount</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>{{ invoice.payment.course.title|default:"Subscription" }}</td>
+              <td class="text-end">GHS {{ invoice.payment.amount }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><th>Total</th><th class="text-end">GHS {{ invoice.payment.amount }}</th></tr>
+          </tfoot>
+        </table>
+      </div>
+      {% if invoice.payment.course %}
+        <a class="btn btn-primary" href="{{ invoice.payment.course.get_absolute_url }}">Go to Course</a>
+      {% endif %}
+      <a class="btn btn-outline-primary" href="{% url 'payments:invoice_download' invoice.invoice_number %}">Download HTML</a>
+      <a class="btn btn-outline-primary" href="{% url 'payments:history' %}">Payment History</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

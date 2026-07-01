@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {{ invoice.invoice_number }}</title>
+  <style>
+    body { color: #172033; font-family: Arial, sans-serif; line-height: 1.5; margin: 40px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #d8dee9; padding: 10px; text-align: left; }
+    .right { text-align: right; }
+    .muted { color: #607089; }
+  </style>
+</head>
+<body>
+  <h1>Invoice</h1>
+  <p class="muted">{{ invoice.invoice_number }} - {{ invoice.issued_at|date:"M d, Y H:i" }}</p>
+
+  <h2>Billed to</h2>
+  <p>{{ invoice.billing_name }}<br>{{ invoice.billing_email }}</p>
+
+  <h2>Payment</h2>
+  <p>{{ invoice.payment.reference }}<br>{{ invoice.payment.get_gateway_display }}<br>{{ invoice.payment.get_status_display }}</p>
+
+  <table>
+    <thead><tr><th>Item</th><th class="right">Amount</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>{{ invoice.payment.course.title|default:"Subscription" }}</td>
+        <td class="right">GHS {{ invoice.payment.amount }}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr><th>Total</th><th class="right">GHS {{ invoice.payment.amount }}</th></tr>
+    </tfoot>
+  </table>
+</body>
+</html>

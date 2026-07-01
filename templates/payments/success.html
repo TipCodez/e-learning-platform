@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card">
+    <h1 class="h2 text-slate">Confirm Payment</h1>
+    <p>{{ payment.course.title|default:"Subscription" }}</p>
+    <div class="dashboard-card mb-3">
+      <div class="d-flex justify-content-between"><span>Reference</span><strong>{{ payment.reference }}</strong></div>
+      <div class="d-flex justify-content-between"><span>Gateway</span><span>{{ payment.get_gateway_display }}</span></div>
+      <div class="d-flex justify-content-between"><span>Status</span><span>{{ payment.get_status_display }}</span></div>
+      <div class="d-flex justify-content-between"><span>Amount</span><strong>GHS {{ payment.amount }}</strong></div>
+    </div>
+
+    {% if payment.status == "pending" %}
+      <form method="post" action="{% url 'payments:confirm' payment.reference %}">
+        {% csrf_token %}
+        <button class="btn btn-primary w-100" type="submit">Confirm Payment</button>
+      </form>
+    {% elif payment.invoice %}
+      <a class="btn btn-primary w-100" href="{% url 'payments:invoice' payment.invoice.invoice_number %}">View Invoice</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
