@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from courses.models import Category, Course, Lesson, LessonNote, LessonResource, Module, Review, SubCategory, WishlistItem
+from courses.models import Category, Course, Lesson, LessonContentBlock, LessonNote, LessonResource, Module, Review, SubCategory, WishlistItem
 
 
 class LessonInline(admin.TabularInline):
@@ -11,6 +11,22 @@ class LessonInline(admin.TabularInline):
 class ModuleInline(admin.TabularInline):
     model = Module
     extra = 0
+
+
+class LessonContentBlockInline(admin.StackedInline):
+    model = LessonContentBlock
+    extra = 1
+    fields = (
+        "order",
+        "block_type",
+        "title",
+        "subtitle",
+        "body",
+        "code_language",
+        "image",
+        "image_alt",
+        "table_data",
+    )
 
 
 @admin.register(Category)
@@ -48,6 +64,15 @@ class LessonAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     list_display = ("title", "module", "lesson_type", "order", "is_preview")
     list_filter = ("lesson_type", "is_preview")
+    search_fields = ("title", "content", "module__course__title")
+    inlines = [LessonContentBlockInline]
+
+
+@admin.register(LessonContentBlock)
+class LessonContentBlockAdmin(admin.ModelAdmin):
+    list_display = ("lesson", "block_type", "order", "title", "updated_at")
+    list_filter = ("block_type", "lesson__module__course")
+    search_fields = ("lesson__title", "lesson__module__course__title", "title", "subtitle", "body", "table_data")
 
 
 admin.site.register(LessonResource)

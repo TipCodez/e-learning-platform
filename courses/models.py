@@ -169,6 +169,49 @@ class Lesson(TimeStampedModel):
         return self.title
 
 
+
+class LessonContentBlock(TimeStampedModel):
+    class BlockType(models.TextChoices):
+        PARAGRAPH = "paragraph", "Paragraph"
+        SUBTITLE = "subtitle", "Subtitle"
+        SECTION = "section", "Section"
+        CODE = "code", "Code Fence"
+        OUTPUT = "output", "Output"
+        SCREENSHOT = "screenshot", "Screenshot"
+        TABLE = "table", "Table"
+        TILE = "tile", "Tile"
+        QUOTE = "quote", "Quote"
+        CALLOUT = "callout", "Callout"
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="content_blocks")
+    block_type = models.CharField(max_length=30, choices=BlockType.choices, default=BlockType.PARAGRAPH)
+    order = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=180, blank=True)
+    subtitle = models.CharField(max_length=220, blank=True)
+    body = models.TextField(blank=True)
+    code_language = models.CharField(max_length=40, blank=True)
+    image = models.ImageField(upload_to="lesson-blocks/", blank=True, null=True)
+    image_alt = models.CharField(max_length=180, blank=True)
+    table_data = models.TextField(
+        blank=True,
+        help_text="Use one row per line and separate columns with |. The first row is rendered as the table header.",
+    )
+
+    class Meta:
+        ordering = ["order", "created_at"]
+
+    def __str__(self):
+        return f"{self.lesson}: {self.get_block_type_display()} #{self.order}"
+
+    @property
+    def table_rows(self):
+        rows = []
+        for line in self.table_data.splitlines():
+            cells = [cell.strip() for cell in line.split("|")]
+            if any(cells):
+                rows.append(cells)
+        return rows
+
 class LessonResource(TimeStampedModel):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="resources")
     title = models.CharField(max_length=160)

@@ -245,7 +245,7 @@ def wishlist(request):
 @login_required
 def lesson_detail(request, slug, lesson_id):
     course = get_object_or_404(Course, slug=slug)
-    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    lesson = get_object_or_404(Lesson.objects.prefetch_related("content_blocks"), pk=lesson_id, module__course=course)
     enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
     if not enrollment and not lesson.is_preview and course.instructor != request.user and not request.user.is_platform_admin:
         messages.error(request, "Enroll before viewing this lesson.")
