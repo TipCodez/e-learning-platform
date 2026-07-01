@@ -5,11 +5,28 @@ from django.utils import timezone
 
 from assessments.forms import AssignmentSubmissionForm, GradeSubmissionForm
 from assessments.models import AnswerOption, Assignment, AssignmentSubmission, Quiz, QuizAttempt, QuizResponse
+from enrollments.models import Enrollment
+from gamification.services import record_quiz_passed
+
+
+def _can_access_course(user, course):
+    return (
+        course.instructor == user
+        or user.is_platform_admin
+        or Enrollment.objects.filter(student=user, course=course).exists()
+    )
 
 
 @login_required
 def quiz_detail(request, quiz_id):
-    quiz = get_object_or_404(Quiz.objects.prefetch_related("questions__options"), pk=quiz_id)
+    quiz = get_object_or_404(Quiz.objects.select_related("course", "course__instructor").prefetch_related("questions__options"), pk=quiz_id)
+    if not _can_access_course(request.user, quiz.course):
+        messages.error(request, "Enroll before taking this quiz.")
+        return redirect("courses:detail", slug=quiz.course.slug)
+    attempts_count = QuizAttempt.objects.filter(quiz=quiz, student=request.user).count()
+    if request.method == "POST" and quiz.retake_limit and attempts_count >= quiz.retake_limit:
+        messages.error(request, "You have reached the retake limit for this quiz.")
+        return redirect("assessments:quiz", quiz_id=quiz.id)
     if request.method == "POST":
         attempt = QuizAttempt.objects.create(quiz=quiz, student=request.user)
         total_points = sum(q.points for q in quiz.questions.all()) or 1
@@ -25,9 +42,11 @@ def quiz_detail(request, quiz_id):
         attempt.passed = attempt.score >= quiz.pass_mark
         attempt.submitted_at = timezone.now()
         attempt.save()
+        if attempt.passed:
+            record_quiz_passed(request.user, quiz)
         messages.success(request, f"Quiz submitted. Score: {attempt.score}%.")
         return redirect("assessments:quiz_result", attempt_id=attempt.id)
-    return render(request, "assessments/quiz_detail.html", {"quiz": quiz})
+    return render(request, "assessments/quiz_detail.html", {"quiz": quiz, "attempts_count": attempts_count})
 
 
 @login_required
@@ -38,7 +57,10 @@ def quiz_result(request, attempt_id):
 
 @login_required
 def assignment_detail(request, assignment_id):
-    assignment = get_object_or_404(Assignment, pk=assignment_id)
+    assignment = get_object_or_404(Assignment.objects.select_related("course", "course__instructor"), pk=assignment_id)
+    if not _can_access_course(request.user, assignment.course):
+        messages.error(request, "Enroll before submitting this assignment.")
+        return redirect("courses:detail", slug=assignment.course.slug)
     submission = AssignmentSubmission.objects.filter(assignment=assignment, student=request.user).first()
     if request.method == "POST":
         form = AssignmentSubmissionForm(request.POST, request.FILES, instance=submission)

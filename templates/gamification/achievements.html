@@ -1,1 +1,35 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container"><h1 class="h2 text-slate">Achievements</h1><div class="row g-3">{% for user_badge in badges %}<div class="col-md-4"><div class="dashboard-card"><strong>{{ user_badge.badge.name }}</strong><span>Earned {{ user_badge.earned_at }}</span></div></div>{% empty %}<div class="empty-state">Complete lessons and quizzes to earn badges.</div>{% endfor %}</div><h2 class="h4 mt-5">Available Badges</h2><div class="row g-3">{% for badge in available_badges %}<div class="col-md-3"><div class="metric-card"><strong>{{ badge.name }}</strong><span>{{ badge.points_required }} pts</span></div></div>{% endfor %}</div></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <h1 class="h2 text-slate">Achievements</h1>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="metric-card"><strong>{{ total_points }}</strong><span>Total points</span></div></div>
+      <div class="col-md-4"><div class="metric-card"><strong>{{ streak.current_streak|default:0 }}</strong><span>Current streak</span></div></div>
+      <div class="col-md-4"><div class="metric-card"><strong>{{ streak.longest_streak|default:0 }}</strong><span>Best streak</span></div></div>
+    </div>
+
+    <div class="row g-3">
+      {% for user_badge in badges %}
+        <div class="col-md-4"><div class="dashboard-card"><strong>{{ user_badge.badge.name }}</strong><span>Earned {{ user_badge.earned_at }}</span></div></div>
+      {% empty %}
+        <div class="empty-state">Complete lessons and quizzes to earn badges.</div>
+      {% endfor %}
+    </div>
+
+    <h2 class="h4 mt-5">Recent Points</h2>
+    {% for transaction in transactions %}
+      <div class="dashboard-card mb-2"><strong>{{ transaction.get_reason_display }}</strong><span>{{ transaction.points }} points</span></div>
+    {% empty %}
+      <div class="empty-state">Your learning activity will appear here.</div>
+    {% endfor %}
+
+    <h2 class="h4 mt-5">Available Badges</h2>
+    <div class="row g-3">
+      {% for badge in available_badges %}
+        <div class="col-md-3"><div class="metric-card"><strong>{{ badge.name }}</strong><span>{{ badge.points_required }} pts</span></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -4,10 +4,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from courses.forms import CourseForm, LessonForm, ModuleForm, ReviewForm
 from courses.models import Category, Course, Lesson, LessonNote, Module, WishlistItem
 from enrollments.models import CourseProgress, Enrollment, LessonProgress
+from gamification.services import record_course_completion, record_lesson_completion
 
 
 def course_list(request):
@@ -273,13 +275,21 @@ def save_lesson_note(request, slug, lesson_id):
 
 
 @login_required
+@require_POST
 def mark_lesson_complete(request, slug, lesson_id):
     course = get_object_or_404(Course, slug=slug)
     lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
     enrollment = get_object_or_404(Enrollment, student=request.user, course=course)
     progress, _ = LessonProgress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
+    first_completion = not progress.completed
+    was_completed = enrollment.status == Enrollment.Status.COMPLETED
     progress.mark_complete()
     course_progress, _ = CourseProgress.objects.get_or_create(enrollment=enrollment)
     course_progress.recalculate()
+    if first_completion:
+        record_lesson_completion(request.user, lesson)
+    enrollment.refresh_from_db()
+    if not was_completed and enrollment.status == Enrollment.Status.COMPLETED:
+        record_course_completion(request, enrollment)
     messages.success(request, "Lesson marked complete.")
     return redirect("courses:lesson", slug=slug, lesson_id=lesson_id)

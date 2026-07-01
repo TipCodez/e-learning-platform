@@ -1,1 +1,13 @@
-﻿{% extends "base.html" %}{% block content %}<section class="page-hero"><div class="container narrow"><h1 class="h2 text-slate">Quiz Result</h1><p class="lead">Score: {{ attempt.score }}% • {{ attempt.passed|yesno:"Passed,Not passed" }}</p><a class="btn btn-primary" href="{{ attempt.quiz.course.get_absolute_url }}">Back to Course</a></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <h1 class="h2 text-slate">Quiz Result</h1>
+    <p class="lead">Score: {{ attempt.score }}% - {{ attempt.passed|yesno:"Passed,Not passed" }}</p>
+    {% if attempt.passed %}
+      <p>You earned points for passing this quiz.</p>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ attempt.quiz.course.get_absolute_url }}">Back to Course</a>
+  </div>
+</section>
+{% endblock %}
