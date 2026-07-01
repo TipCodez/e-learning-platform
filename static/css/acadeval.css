@@ -310,3 +310,132 @@ a:hover {
     white-space: nowrap;
   }
 }
+
+.article-body {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.article-section,
+.article-paragraph,
+.article-tile,
+.article-callout,
+.output-block,
+.code-block,
+.screenshot-block,
+.article-table {
+  border: 1px solid rgba(11, 31, 58, .08);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.article-section,
+.article-paragraph,
+.article-tile,
+.article-callout,
+.article-table {
+  padding: 1.25rem;
+}
+
+.article-subtitle {
+  color: var(--navy);
+  font-size: 1.65rem;
+  margin: 1rem 0 0;
+}
+
+.code-block,
+.output-block {
+  overflow: hidden;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.code-toolbar {
+  align-items: center;
+  background: #111827;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  display: flex;
+  justify-content: space-between;
+  padding: .65rem .85rem;
+}
+
+.code-toolbar span {
+  color: #cbd5e1;
+  font-size: .85rem;
+  text-transform: uppercase;
+}
+
+.code-block pre,
+.output-block pre {
+  margin: 0;
+  overflow-x: auto;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.output-block {
+  background: #111827;
+  padding-top: .85rem;
+}
+
+.output-block strong {
+  color: #fff;
+  display: block;
+  padding: 0 1rem .5rem;
+}
+
+.screenshot-block {
+  margin: 0;
+  overflow: hidden;
+}
+
+.screenshot-block img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.screenshot-block figcaption {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: .9rem;
+  padding: .75rem 1rem;
+}
+
+.article-tile {
+  border-left: 4px solid var(--emerald);
+}
+
+.article-tile strong,
+.article-callout strong {
+  color: var(--navy);
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: .35rem;
+}
+
+.article-tile span {
+  color: #64748b;
+  display: block;
+  margin-bottom: .65rem;
+}
+
+.article-callout {
+  background: #fff8e6;
+  border-left: 4px solid var(--gold);
+}
+
+.article-quote {
+  border-left: 4px solid var(--navy);
+  color: #334155;
+  font-size: 1.1rem;
+  margin: 0;
+  padding: 1rem 1.25rem;
+}
+
+.article-quote cite {
+  color: #64748b;
+  display: block;
+  font-size: .95rem;
+  margin-top: .5rem;
+}

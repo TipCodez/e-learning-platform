@@ -20,7 +20,7 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(max_length=210, unique=True, blank=True)
     excerpt = models.TextField(blank=True)
-    content = models.TextField()
+    content = models.TextField(blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(blank=True, null=True)
@@ -49,6 +49,51 @@ class BlogPost(models.Model):
     def __str__(self):
         return self.title
 
+
+
+class BlogContentBlock(models.Model):
+    class BlockType(models.TextChoices):
+        PARAGRAPH = "paragraph", "Paragraph"
+        SUBTITLE = "subtitle", "Subtitle"
+        SECTION = "section", "Section"
+        CODE = "code", "Code Fence"
+        OUTPUT = "output", "Output"
+        SCREENSHOT = "screenshot", "Screenshot"
+        TABLE = "table", "Table"
+        TILE = "tile", "Tile"
+        QUOTE = "quote", "Quote"
+        CALLOUT = "callout", "Callout"
+
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name="blocks")
+    block_type = models.CharField(max_length=30, choices=BlockType.choices, default=BlockType.PARAGRAPH)
+    order = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=180, blank=True)
+    subtitle = models.CharField(max_length=220, blank=True)
+    body = models.TextField(blank=True)
+    code_language = models.CharField(max_length=40, blank=True)
+    image = models.ImageField(upload_to="blog-blocks/", blank=True, null=True)
+    image_alt = models.CharField(max_length=180, blank=True)
+    table_data = models.TextField(
+        blank=True,
+        help_text="Use one row per line and separate columns with |. The first row is rendered as the table header.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["order", "created_at"]
+
+    def __str__(self):
+        return f"{self.post}: {self.get_block_type_display()} #{self.order}"
+
+    @property
+    def table_rows(self):
+        rows = []
+        for line in self.table_data.splitlines():
+            cells = [cell.strip() for cell in line.split("|")]
+            if any(cells):
+                rows.append(cells)
+        return rows
 
 class FAQ(models.Model):
     question = models.CharField(max_length=220)

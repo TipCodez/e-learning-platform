@@ -104,7 +104,7 @@ def blog(request):
 
 
 def blog_detail(request, slug):
-    post = get_object_or_404(BlogPost, slug=slug, is_published=True)
+    post = get_object_or_404(BlogPost.objects.prefetch_related("blocks"), slug=slug, is_published=True)
     return render(request, "core/blog_detail.html", {"post": post})
 
 
