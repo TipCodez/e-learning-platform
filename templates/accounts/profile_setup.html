@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Profile Setup | Acadeval{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card wide">
+    <span class="eyebrow">Profile</span>
+    <h1 class="h2 text-slate mb-4">Complete your profile</h1>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary" type="submit">Save Profile</button>
+      <a class="btn btn-link" href="{% url 'dashboards:home' %}">Skip for now</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

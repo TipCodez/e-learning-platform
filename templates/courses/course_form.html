@@ -1,0 +1,3 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ title }} | Acadeval{% endblock %}
+{% block content %}<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">{{ title }}</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save</button></form></div></section>{% endblock %}

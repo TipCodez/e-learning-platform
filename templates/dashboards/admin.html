@@ -1,0 +1,8 @@
+{% extends "dashboards/base_dashboard.html" %}
+{% block title %}Admin Dashboard | Acadeval{% endblock %}
+{% block dashboard_content %}
+<h1 class="h2 text-slate">Admin Dashboard</h1>
+<p class="text-muted">Moderate users, approve courses, monitor platform metrics, and manage settings.</p>
+{% include "dashboards/partials/metrics.html" %}
+{% include "dashboards/partials/empty_state.html" with title="Platform controls ready" text="Admin feature modules will be connected as courses, payments, and certificates are added." %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "dashboards/base_dashboard.html" %}
+{% block title %}Instructor Dashboard | Acadeval{% endblock %}
+{% block dashboard_content %}
+<h1 class="h2 text-slate">Instructor Dashboard</h1>
+<p class="text-muted">Create courses, manage learners, review submissions, and monitor revenue.</p>
+{% include "dashboards/partials/metrics.html" %}
+{% include "dashboards/partials/empty_state.html" with title="No courses created" text="Course creation arrives in Phase 2 with modules, lessons, and publishing workflow." %}
+{% endblock %}

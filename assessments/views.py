@@ -1,0 +1,71 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from assessments.forms import AssignmentSubmissionForm, GradeSubmissionForm
+from assessments.models import AnswerOption, Assignment, AssignmentSubmission, Quiz, QuizAttempt, QuizResponse
+
+
+@login_required
+def quiz_detail(request, quiz_id):
+    quiz = get_object_or_404(Quiz.objects.prefetch_related("questions__options"), pk=quiz_id)
+    if request.method == "POST":
+        attempt = QuizAttempt.objects.create(quiz=quiz, student=request.user)
+        total_points = sum(q.points for q in quiz.questions.all()) or 1
+        earned = 0
+        for question in quiz.questions.all():
+            option_id = request.POST.get(f"question_{question.id}")
+            selected = AnswerOption.objects.filter(pk=option_id, question=question).first() if option_id else None
+            is_correct = bool(selected and selected.is_correct)
+            points = question.points if is_correct else 0
+            earned += points
+            QuizResponse.objects.create(attempt=attempt, question=question, selected_option=selected, is_correct=is_correct, points_awarded=points)
+        attempt.score = round((earned / total_points) * 100, 2)
+        attempt.passed = attempt.score >= quiz.pass_mark
+        attempt.submitted_at = timezone.now()
+        attempt.save()
+        messages.success(request, f"Quiz submitted. Score: {attempt.score}%.")
+        return redirect("assessments:quiz_result", attempt_id=attempt.id)
+    return render(request, "assessments/quiz_detail.html", {"quiz": quiz})
+
+
+@login_required
+def quiz_result(request, attempt_id):
+    attempt = get_object_or_404(QuizAttempt, pk=attempt_id, student=request.user)
+    return render(request, "assessments/quiz_result.html", {"attempt": attempt})
+
+
+@login_required
+def assignment_detail(request, assignment_id):
+    assignment = get_object_or_404(Assignment, pk=assignment_id)
+    submission = AssignmentSubmission.objects.filter(assignment=assignment, student=request.user).first()
+    if request.method == "POST":
+        form = AssignmentSubmissionForm(request.POST, request.FILES, instance=submission)
+        if form.is_valid():
+            submission = form.save(commit=False)
+            submission.assignment = assignment
+            submission.student = request.user
+            submission.save()
+            messages.success(request, "Assignment submitted.")
+            return redirect("assessments:assignment", assignment_id=assignment.id)
+    else:
+        form = AssignmentSubmissionForm(instance=submission)
+    return render(request, "assessments/assignment_detail.html", {"assignment": assignment, "form": form, "submission": submission})
+
+
+@login_required
+def grade_submission(request, submission_id):
+    submission = get_object_or_404(AssignmentSubmission, pk=submission_id)
+    if submission.assignment.course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "Only the instructor can grade this submission.")
+        return redirect("dashboards:home")
+    form = GradeSubmissionForm(request.POST or None, instance=submission)
+    if request.method == "POST" and form.is_valid():
+        graded = form.save(commit=False)
+        graded.graded_by = request.user
+        graded.graded_at = timezone.now()
+        graded.save()
+        messages.success(request, "Submission graded.")
+        return redirect("dashboards:home")
+    return render(request, "assessments/grade_submission.html", {"form": form, "submission": submission})

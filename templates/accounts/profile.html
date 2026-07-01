@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}My Profile | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <h1 class="display-6 fw-bold text-slate">{{ user.get_full_name|default:user.username }}</h1>
+    <p class="lead">{{ user.get_role_display }}</p>
+    <a class="btn btn-primary" href="{% url 'accounts:profile_setup' %}">Edit Profile</a>
+  </div>
+</section>
+{% endblock %}

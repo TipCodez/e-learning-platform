@@ -1,0 +1,10 @@
+<div class="row g-3 my-4">
+  {% for label, value in metrics %}
+    <div class="col-md-6 col-xl-3">
+      <div class="dashboard-card">
+        <span>{{ label }}</span>
+        <strong>{{ value }}</strong>
+      </div>
+    </div>
+  {% endfor %}
+</div>

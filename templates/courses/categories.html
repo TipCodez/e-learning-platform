@@ -1,0 +1,2 @@
+﻿{% extends "base.html" %}
+{% block content %}<section class="page-hero"><div class="container"><h1 class="display-5 fw-bold text-slate">Categories</h1></div></section><section class="section-pad"><div class="container"><div class="row g-3">{% for category in categories %}<div class="col-md-4"><div class="dashboard-card"><strong>{{ category.name }}</strong><p>{{ category.description }}</p></div></div>{% endfor %}</div></div></section>{% endblock %}
