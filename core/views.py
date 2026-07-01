@@ -87,7 +87,13 @@ def become_instructor(request):
 
 
 def organization_training(request):
-    return simple_page(request, "core/coming_soon.html", "Organization Training")
+    features = [
+        ("Bulk learner management", "Add existing learners or create learner accounts from a simple email list."),
+        ("Team enrollment", "Enroll selected learners into published courses and keep cohort records."),
+        ("Progress reporting", "Review learner counts, enrollments, completion totals, average progress, and export CSV reports."),
+        ("Certificates and outcomes", "Track certificates earned by organization learners as courses are completed."),
+    ]
+    return render(request, "core/organization_training.html", {"features": features})
 
 
 def blog(request):

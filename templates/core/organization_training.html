@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Organization Training | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">For teams and institutions</span>
+    <h1 class="display-5 fw-bold text-slate">Organization Training</h1>
+    <p class="lead">Train teams, enroll learners in bulk, monitor progress, and export outcomes from one organization workspace.</p>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      {% if user.is_authenticated and user.is_organization %}
+        <a class="btn btn-primary btn-lg" href="{% url 'dashboards:organization' %}">Open Organization Dashboard</a>
+        <a class="btn btn-outline-primary btn-lg" href="{% url 'organizations:bulk_learners' %}">Bulk Add Learners</a>
+      {% elif user.is_authenticated %}
+        <a class="btn btn-primary btn-lg" href="{% url 'core:contact' %}">Contact Sales</a>
+        <a class="btn btn-outline-primary btn-lg" href="{% url 'courses:list' %}">Browse Courses</a>
+      {% else %}
+        <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Create Organization Account</a>
+        <a class="btn btn-outline-primary btn-lg" href="{% url 'accounts:login' %}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      {% for title, text in features %}
+        <div class="col-md-6">
+          <div class="dashboard-card h-100">
+            <strong>{{ title }}</strong>
+            <p class="text-muted mb-0">{{ text }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section-pad bg-soft">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-7">
+        <span class="eyebrow">Operational workflow</span>
+        <h2 class="h1 text-slate">Built for repeatable training operations.</h2>
+        <p class="lead">Organization admins can add learners, assign courses, review progress, generate reports, and export learner outcomes without waiting for manual setup.</p>
+      </div>
+      <div class="col-lg-5">
+        <div class="dashboard-card">
+          <strong>Available organization tools</strong>
+          <ul class="mt-3 mb-0">
+            <li>Learner directory</li>
+            <li>Bulk learner import</li>
+            <li>Bulk course enrollment</li>
+            <li>Training reports and CSV export</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
