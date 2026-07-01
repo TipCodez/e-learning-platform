@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from courses.models import Category, Course, Lesson, LessonResource, Module, Review, SubCategory
+from courses.models import Category, Course, Lesson, LessonNote, LessonResource, Module, Review, SubCategory, WishlistItem
 
 
 class LessonInline(admin.TabularInline):
@@ -52,3 +52,5 @@ class LessonAdmin(admin.ModelAdmin):
 
 admin.site.register(LessonResource)
 admin.site.register(Review)
+admin.site.register(WishlistItem)
+admin.site.register(LessonNote)

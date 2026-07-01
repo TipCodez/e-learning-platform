@@ -193,3 +193,29 @@ class Review(TimeStampedModel):
 
     def __str__(self):
         return f"{self.course} rating {self.rating}"
+
+
+class WishlistItem(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="wishlist_items")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="wishlisted_by")
+
+    class Meta:
+        unique_together = ("user", "course")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} saved {self.course}"
+
+
+class LessonNote(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_notes")
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="notes")
+    note = models.TextField(blank=True)
+    is_bookmarked = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "lesson")
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.user} note for {self.lesson}"

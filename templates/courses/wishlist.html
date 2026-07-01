@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}My Wishlist | Acadeval{% endblock %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <span class="eyebrow">Saved courses</span>
+        <h1 class="h2 text-slate">My Wishlist</h1>
+      </div>
+      <a class="btn btn-outline-primary" href="{% url 'courses:list' %}">Browse Courses</a>
+    </div>
+    <div class="row g-4">
+      {% for item in items %}
+        <div class="col-md-6 col-lg-4">
+          <article class="course-card">
+            <div class="course-thumb"></div>
+            <div class="p-4">
+              <span class="badge text-bg-success">{{ item.course.get_level_display }}</span>
+              <h2 class="h5 mt-3">{{ item.course.title }}</h2>
+              <p class="text-muted">{{ item.course.category|default:"Course" }} • {% if item.course.is_free %}Free{% else %}GHS {{ item.course.price }}{% endif %}</p>
+              <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-primary" href="{{ item.course.get_absolute_url }}">Open</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'courses:toggle_wishlist' item.course.slug %}">Remove</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      {% empty %}
+        <div class="empty-state">No saved courses yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

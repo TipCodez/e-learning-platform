@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 
 from courses.forms import CourseForm, LessonForm, ModuleForm, ReviewForm
-from courses.models import Category, Course, Lesson, Module
+from courses.models import Category, Course, Lesson, LessonNote, Module, WishlistItem
 from enrollments.models import CourseProgress, Enrollment, LessonProgress
 
 
@@ -51,10 +51,21 @@ def course_detail(request, slug):
             messages.error(request, "This course is not published yet.")
             return redirect("courses:list")
     enrollment = None
+    is_wishlisted = False
     if request.user.is_authenticated:
         enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
+        is_wishlisted = WishlistItem.objects.filter(user=request.user, course=course).exists()
     review_form = ReviewForm()
-    return render(request, "courses/course_detail.html", {"course": course, "enrollment": enrollment, "review_form": review_form})
+    return render(
+        request,
+        "courses/course_detail.html",
+        {
+            "course": course,
+            "enrollment": enrollment,
+            "is_wishlisted": is_wishlisted,
+            "review_form": review_form,
+        },
+    )
 
 
 def categories(request):
@@ -211,6 +222,25 @@ def submit_review(request, slug):
 
 
 @login_required
+def toggle_wishlist(request, slug):
+    course = get_object_or_404(Course, slug=slug)
+    item = WishlistItem.objects.filter(user=request.user, course=course).first()
+    if item:
+        item.delete()
+        messages.success(request, "Course removed from your wishlist.")
+    else:
+        WishlistItem.objects.create(user=request.user, course=course)
+        messages.success(request, "Course saved to your wishlist.")
+    return redirect("courses:detail", slug=slug)
+
+
+@login_required
+def wishlist(request):
+    items = WishlistItem.objects.select_related("course", "course__category").filter(user=request.user)
+    return render(request, "courses/wishlist.html", {"items": items})
+
+
+@login_required
 def lesson_detail(request, slug, lesson_id):
     course = get_object_or_404(Course, slug=slug)
     lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
@@ -218,7 +248,28 @@ def lesson_detail(request, slug, lesson_id):
     if not enrollment and not lesson.is_preview and course.instructor != request.user and not request.user.is_platform_admin:
         messages.error(request, "Enroll before viewing this lesson.")
         return redirect("courses:detail", slug=slug)
-    return render(request, "courses/lesson_detail.html", {"course": course, "lesson": lesson, "enrollment": enrollment})
+    note = LessonNote.objects.filter(user=request.user, lesson=lesson).first()
+    return render(request, "courses/lesson_detail.html", {"course": course, "lesson": lesson, "enrollment": enrollment, "note": note})
+
+
+@login_required
+def save_lesson_note(request, slug, lesson_id):
+    course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
+    if not enrollment and course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "Enroll before saving lesson notes.")
+        return redirect("courses:detail", slug=slug)
+    LessonNote.objects.update_or_create(
+        user=request.user,
+        lesson=lesson,
+        defaults={
+            "note": request.POST.get("note", ""),
+            "is_bookmarked": bool(request.POST.get("is_bookmarked")),
+        },
+    )
+    messages.success(request, "Lesson note saved.")
+    return redirect("courses:lesson", slug=slug, lesson_id=lesson.id)
 
 
 @login_required
