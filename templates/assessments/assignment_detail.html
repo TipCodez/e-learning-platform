@@ -1,1 +1,4 @@
-﻿{% extends "base.html" %}{% block content %}<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">{{ assignment.title }}</h1><p>{{ assignment.instructions }}</p>{% if submission.score %}<div class="alert alert-success">Score: {{ submission.score }}. {{ submission.feedback }}</div>{% endif %}<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Submit Assignment</button></form></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">{{ assignment.title }}</h1><p>{{ assignment.instructions }}</p><p class="text-muted">Max score: {{ assignment.max_score }}</p>{% if submission.score != None %}<div class="alert alert-success">Score: {{ submission.score }}. {{ submission.feedback }}</div>{% elif submission %}<div class="alert alert-info">Submission received and waiting for grading.</div>{% endif %}<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Submit Assignment</button></form></div></section>
+{% endblock %}

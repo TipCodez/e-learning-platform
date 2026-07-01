@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <section class="dashboard-shell">
   <aside class="dashboard-sidebar">
@@ -7,6 +7,7 @@
     <a class="sidebar-link" href="{% url 'courses:list' %}">Courses</a>
     <a class="sidebar-link" href="{% url 'courses:wishlist' %}">Wishlist</a>
     <a class="sidebar-link" href="{% url 'certificates:my_certificates' %}">Certificates</a>
+    <a class="sidebar-link" href="{% url 'core:ai_assistant' %}">AI Assistant</a>
   </aside>
   <div class="dashboard-main">
     {% block dashboard_content %}{% endblock %}

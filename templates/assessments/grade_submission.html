@@ -1,1 +1,4 @@
-﻿{% extends "base.html" %}{% block content %}<section class="auth-section"><div class="auth-card"><h1 class="h2 text-slate">Grade Submission</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Grade</button></form></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Grade Submission</h1><p class="text-muted">{{ submission.assignment.title }} &middot; {{ submission.student.email }}</p><div class="dashboard-card mb-3"><p>{{ submission.response_text|linebreaks }}</p>{% if submission.file %}<a href="{{ submission.file.url }}">Download submitted file</a>{% endif %}</div><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Grade</button></form></div></section>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.urls import reverse
 
+from accounts.models import StudentProfile
 from certificates.models import Certificate
 from certificates.services import ensure_certificate_assets
 from gamification.models import Badge, Leaderboard, LearningStreak, PointsTransaction, UserBadge
@@ -11,15 +12,27 @@ LESSON_POINTS = 10
 QUIZ_PASS_POINTS = 25
 COURSE_COMPLETION_POINTS = 100
 CERTIFICATE_POINTS = 50
+LEVEL_POINTS = 100
 
 
 def _total_points(user):
     return PointsTransaction.objects.filter(user=user).aggregate(total=models.Sum("points"))["total"] or 0
 
 
+def _sync_student_profile(user, total):
+    if not getattr(user, "is_student", False):
+        return None
+    profile, _ = StudentProfile.objects.get_or_create(user=user)
+    profile.points = max(total, 0)
+    profile.level = max(1, int(profile.points / LEVEL_POINTS) + 1)
+    profile.save(update_fields=["points", "level"])
+    return profile
+
+
 def _sync_leaderboard(user):
     total = _total_points(user)
     Leaderboard.objects.update_or_create(user=user, defaults={"points": max(total, 0)})
+    _sync_student_profile(user, total)
     for index, entry in enumerate(Leaderboard.objects.order_by("-points", "user__email"), start=1):
         if entry.rank != index:
             entry.rank = index
@@ -64,6 +77,20 @@ def award_points(user, points, reason, description, unique=True):
     total = _sync_leaderboard(user)
     _award_badges(user, total)
     return transaction
+
+
+def sync_user_xp(user):
+    total = _sync_leaderboard(user)
+    _award_badges(user, total)
+    return total
+
+
+def rebuild_xp_state():
+    users = {transaction.user for transaction in PointsTransaction.objects.select_related("user")}
+    results = []
+    for user in users:
+        results.append((user.email, sync_user_xp(user)))
+    return results
 
 
 def record_lesson_completion(user, lesson):

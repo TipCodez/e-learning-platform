@@ -1,0 +1,21 @@
+{% extends "dashboards/base_dashboard.html" %}
+{% block title %}Instructor Analytics | Acadeval{% endblock %}
+{% block dashboard_content %}
+<h1 class="h2 text-slate">Instructor Analytics</h1>
+<div class="row g-3 my-4">
+  <div class="col-md-3"><div class="dashboard-card"><span>Courses</span><strong>{{ totals.courses }}</strong></div></div>
+  <div class="col-md-3"><div class="dashboard-card"><span>Learners</span><strong>{{ totals.learners }}</strong></div></div>
+  <div class="col-md-3"><div class="dashboard-card"><span>Completed</span><strong>{{ totals.completed }}</strong></div></div>
+  <div class="col-md-3"><div class="dashboard-card"><span>Revenue</span><strong>GHS {{ totals.revenue }}</strong></div></div>
+</div>
+{% for row in course_rows %}
+  <div class="dashboard-card mb-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+      <div><strong>{{ row.course.title }}</strong><div class="text-muted">{{ row.average_progress }}% average progress</div></div>
+      <div class="text-md-end">{{ row.learners }} learners &middot; {{ row.completed }} completed &middot; {{ row.certificates }} certificates &middot; GHS {{ row.revenue }}</div>
+    </div>
+  </div>
+{% empty %}
+  <div class="empty-state">No course analytics yet.</div>
+{% endfor %}
+{% endblock %}

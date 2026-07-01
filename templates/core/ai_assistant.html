@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container narrow">
+    <h1 class="h2 text-slate">AI Learning Assistant</h1>
+    <p class="text-muted">This workspace is prepared for guided study help, quiz explanations, and course recommendations.</p>
+    <div class="dashboard-card">
+      <label class="form-label" for="aiPrompt">Ask a question</label>
+      <textarea id="aiPrompt" class="form-control" rows="5" placeholder="AI responses will be enabled when the provider integration is configured." disabled></textarea>
+      <button class="btn btn-primary mt-3" disabled>Ask Assistant</button>
+    </div>
+    <div class="row g-3 mt-3">
+      <div class="col-md-4"><div class="metric-card"><strong>Study help</strong><span>Lesson-aware explanations</span></div></div>
+      <div class="col-md-4"><div class="metric-card"><strong>Practice</strong><span>Quiz feedback support</span></div></div>
+      <div class="col-md-4"><div class="metric-card"><strong>Guidance</strong><span>Path recommendations</span></div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -114,3 +114,7 @@ def terms(request):
 
 def privacy(request):
     return simple_page(request, "core/legal.html", "Privacy Policy")
+
+
+def ai_assistant(request):
+    return render(request, "core/ai_assistant.html")

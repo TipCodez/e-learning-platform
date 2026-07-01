@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Bulk Enroll Learners</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Enroll Selected Learners</button></form></div></section>
+{% endblock %}

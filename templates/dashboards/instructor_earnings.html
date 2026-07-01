@@ -1,0 +1,15 @@
+{% extends "dashboards/base_dashboard.html" %}
+{% block title %}Instructor Earnings | Acadeval{% endblock %}
+{% block dashboard_content %}
+<h1 class="h2 text-slate">Instructor Earnings</h1>
+<div class="row g-3 my-4">
+  <div class="col-md-4"><div class="dashboard-card"><span>Gross</span><strong>GHS {{ gross }}</strong></div></div>
+  <div class="col-md-4"><div class="dashboard-card"><span>Platform commission</span><strong>{{ commission_rate }}% / GHS {{ commission }}</strong></div></div>
+  <div class="col-md-4"><div class="dashboard-card"><span>Estimated net</span><strong>GHS {{ net }}</strong></div></div>
+</div>
+{% for payment in payments %}
+  <div class="dashboard-card mb-2"><strong>{{ payment.course.title }}</strong><span>{{ payment.user.email }} &middot; GHS {{ payment.amount }} &middot; {{ payment.paid_at|date:"M d, Y" }}</span></div>
+{% empty %}
+  <div class="empty-state">No successful course payments yet.</div>
+{% endfor %}
+{% endblock %}

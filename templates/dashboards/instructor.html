@@ -7,6 +7,8 @@
 <div class="d-flex flex-wrap gap-2 mb-4">
   <a class="btn btn-primary" href="{% url 'courses:create' %}">Create Course</a>
   <a class="btn btn-outline-primary" href="{% url 'courses:instructor_courses' %}">Manage Courses</a>
+  <a class="btn btn-outline-primary" href="{% url 'dashboards:instructor_analytics' %}">Analytics</a>
+  <a class="btn btn-outline-primary" href="{% url 'dashboards:instructor_earnings' %}">Earnings</a>
+  <a class="btn btn-outline-primary" href="{% url 'assessments:submissions' %}">Grade Submissions{% if pending_submissions %} ({{ pending_submissions }}){% endif %}</a>
 </div>
-{% include "dashboards/partials/empty_state.html" with title="No courses created" text="Course creation arrives in Phase 2 with modules, lessons, and publishing workflow." %}
 {% endblock %}

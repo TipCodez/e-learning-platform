@@ -1,12 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from assessments.forms import AssignmentSubmissionForm, GradeSubmissionForm
 from assessments.models import AnswerOption, Assignment, AssignmentSubmission, Quiz, QuizAttempt, QuizResponse
 from enrollments.models import Enrollment
 from gamification.services import record_quiz_passed
+from notifications.models import Notification
 
 
 def _can_access_course(user, course):
@@ -69,6 +71,13 @@ def assignment_detail(request, assignment_id):
             submission.assignment = assignment
             submission.student = request.user
             submission.save()
+            Notification.objects.get_or_create(
+                user=assignment.course.instructor,
+                title="Assignment submitted",
+                notification_type=Notification.Type.ASSIGNMENT_FEEDBACK,
+                link=reverse("assessments:grade_submission", kwargs={"submission_id": submission.id}),
+                defaults={"message": f"{request.user.email} submitted {assignment.title}."},
+            )
             messages.success(request, "Assignment submitted.")
             return redirect("assessments:assignment", assignment_id=assignment.id)
     else:
@@ -77,8 +86,26 @@ def assignment_detail(request, assignment_id):
 
 
 @login_required
+def submission_queue(request):
+    if not (request.user.is_instructor or request.user.is_platform_admin):
+        messages.error(request, "Instructor access required.")
+        return redirect("dashboards:home")
+    submissions = AssignmentSubmission.objects.select_related("assignment", "assignment__course", "student")
+    status = request.GET.get("status", "pending")
+    if not request.user.is_platform_admin:
+        submissions = submissions.filter(assignment__course__instructor=request.user)
+    if status == "graded":
+        submissions = submissions.filter(score__isnull=False)
+    elif status == "all":
+        pass
+    else:
+        submissions = submissions.filter(score__isnull=True)
+    return render(request, "assessments/submission_queue.html", {"submissions": submissions, "status": status})
+
+
+@login_required
 def grade_submission(request, submission_id):
-    submission = get_object_or_404(AssignmentSubmission, pk=submission_id)
+    submission = get_object_or_404(AssignmentSubmission.objects.select_related("assignment", "assignment__course", "student"), pk=submission_id)
     if submission.assignment.course.instructor != request.user and not request.user.is_platform_admin:
         messages.error(request, "Only the instructor can grade this submission.")
         return redirect("dashboards:home")
@@ -88,6 +115,13 @@ def grade_submission(request, submission_id):
         graded.graded_by = request.user
         graded.graded_at = timezone.now()
         graded.save()
+        Notification.objects.get_or_create(
+            user=graded.student,
+            title="Assignment graded",
+            notification_type=Notification.Type.ASSIGNMENT_FEEDBACK,
+            link=reverse("assessments:assignment", kwargs={"assignment_id": graded.assignment_id}),
+            defaults={"message": f"Your submission for {graded.assignment.title} was graded."},
+        )
         messages.success(request, "Submission graded.")
-        return redirect("dashboards:home")
+        return redirect("assessments:submissions")
     return render(request, "assessments/grade_submission.html", {"form": form, "submission": submission})
