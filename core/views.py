@@ -1,4 +1,9 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect, render
+
+from core.forms import SupportTicketForm
+from core.models import BlogPost, FAQ
 
 
 def home(request):
@@ -60,7 +65,21 @@ def about(request):
 
 
 def contact(request):
-    return simple_page(request, "core/coming_soon.html", "Contact")
+    initial = {}
+    if request.user.is_authenticated:
+        initial = {
+            "name": request.user.get_full_name() or request.user.username,
+            "email": request.user.email,
+        }
+    form = SupportTicketForm(request.POST or None, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        ticket = form.save(commit=False)
+        if request.user.is_authenticated:
+            ticket.user = request.user
+        ticket.save()
+        messages.success(request, "Your support request has been sent.")
+        return redirect("core:contact")
+    return render(request, "core/contact.html", {"form": form})
 
 
 def become_instructor(request):
@@ -72,11 +91,21 @@ def organization_training(request):
 
 
 def blog(request):
-    return simple_page(request, "core/coming_soon.html", "Blog")
+    posts = BlogPost.objects.filter(is_published=True)
+    paginator = Paginator(posts, 6)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(request, "core/blog.html", {"page": page})
+
+
+def blog_detail(request, slug):
+    post = get_object_or_404(BlogPost, slug=slug, is_published=True)
+    return render(request, "core/blog_detail.html", {"post": post})
 
 
 def help_center(request):
-    return simple_page(request, "core/coming_soon.html", "Help Center")
+    faqs = FAQ.objects.filter(is_active=True)
+    categories = faqs.exclude(category="").values_list("category", flat=True).distinct()
+    return render(request, "core/help_center.html", {"faqs": faqs, "categories": categories})
 
 
 def terms(request):

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Help Center | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Support</span>
+    <h1 class="display-5 fw-bold text-slate">Help Center</h1>
+    <p class="lead">Find answers about accounts, courses, certificates, payments, and organizations.</p>
+    <a class="btn btn-primary" href="{% url 'core:contact' %}">Contact Support</a>
+  </div>
+</section>
+<section class="section-pad">
+  <div class="container">
+    {% for category in categories %}
+      <h2 class="h4 text-slate mt-4">{{ category }}</h2>
+      <div class="row g-3">
+        {% for faq in faqs %}
+          {% if faq.category == category %}
+            <div class="col-md-6">
+              <div class="dashboard-card h-100">
+                <strong>{{ faq.question }}</strong>
+                <p class="text-muted mb-0 mt-2">{{ faq.answer }}</p>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% empty %}
+      <div class="empty-state">FAQs can be added from the admin.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

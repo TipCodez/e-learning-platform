@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <span class="eyebrow">{{ post.published_at|date:"M d, Y" }}</span>
+    <h1 class="display-5 fw-bold text-slate">{{ post.title }}</h1>
+    <p class="lead">{{ post.excerpt }}</p>
+  </div>
+</section>
+<section class="section-pad">
+  <div class="container narrow">
+    <article class="dashboard-card">
+      {{ post.content|linebreaks }}
+    </article>
+  </div>
+</section>
+{% endblock %}

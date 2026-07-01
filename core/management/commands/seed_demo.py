@@ -5,6 +5,7 @@ from django.db import transaction
 
 from accounts.models import CustomUser
 from assessments.models import AnswerOption, Question, Quiz
+from core.models import BlogPost, FAQ
 from courses.models import Category, Course, Lesson, Module, SubCategory
 from gamification.models import Badge
 from learning_paths.models import LearningPath, LearningPathCourse
@@ -22,6 +23,7 @@ class Command(BaseCommand):
         self._learning_paths(courses)
         self._badges()
         self._plans()
+        self._content(instructor)
         self.stdout.write(self.style.SUCCESS("Acadeval demo data is ready."))
 
     def _instructor(self):
@@ -230,4 +232,40 @@ class Command(BaseCommand):
             SubscriptionPlan.objects.get_or_create(
                 name=name,
                 defaults={"price": price, "duration_days": days, "description": description, "is_active": True},
+            )
+
+    def _content(self, author):
+        faqs = [
+            ("Accounts", "How do I create an account?", "Use your email address, choose a role, and set a strong password."),
+            ("Courses", "Can I learn for free?", "Yes. Acadeval supports free courses and paid premium courses."),
+            ("Certificates", "How are certificates verified?", "Each certificate has a unique ID and public verification page."),
+            ("Payments", "Which payment methods are planned?", "Paystack, Flutterwave, mobile money, and card payments are structurally supported."),
+        ]
+        for index, (category, question, answer) in enumerate(faqs, start=1):
+            FAQ.objects.get_or_create(
+                question=question,
+                defaults={"answer": answer, "category": category, "order": index, "is_active": True},
+            )
+
+        posts = [
+            (
+                "How to Choose Your First Online Course",
+                "A practical guide to choosing a course that matches your skill level and career goal.",
+                "Start with your goal, then check the course level, outcomes, assessment style, certificate availability, and instructor profile. A good first course should be practical, focused, and easy to complete consistently.",
+            ),
+            (
+                "Why Verified Certificates Matter",
+                "Verified certificates help learners prove completion and help employers confirm authenticity.",
+                "A certificate is more valuable when it can be verified publicly. Acadeval prepares every certificate with a unique ID and verification page so employers and institutions can confirm learner achievement.",
+            ),
+        ]
+        for title, excerpt, content in posts:
+            BlogPost.objects.get_or_create(
+                title=title,
+                defaults={
+                    "excerpt": excerpt,
+                    "content": content,
+                    "author": author,
+                    "is_published": True,
+                },
             )

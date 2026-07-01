@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Blog | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Learning resources</span>
+    <h1 class="display-5 fw-bold text-slate">Acadeval Blog</h1>
+    <p class="lead">Study tips, career guidance, platform updates, and practical learning resources.</p>
+  </div>
+</section>
+<section class="section-pad">
+  <div class="container">
+    <div class="row g-4">
+      {% for post in page %}
+        <div class="col-md-6 col-lg-4">
+          <article class="dashboard-card h-100">
+            <span class="eyebrow">{{ post.published_at|date:"M d, Y" }}</span>
+            <h2 class="h5 mt-2">{{ post.title }}</h2>
+            <p class="text-muted">{{ post.excerpt|default:post.content|truncatewords:24 }}</p>
+            <a class="btn btn-sm btn-outline-primary" href="{{ post.get_absolute_url }}">Read</a>
+          </article>
+        </div>
+      {% empty %}
+        <div class="empty-state">Blog posts can be published from the admin.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

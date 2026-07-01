@@ -16,6 +16,7 @@ urlpatterns = [
     path("become-an-instructor/", views.become_instructor, name="become_instructor"),
     path("organization-training/", views.organization_training, name="organization_training"),
     path("blog/", views.blog, name="blog"),
+    path("blog/<slug:slug>/", views.blog_detail, name="blog_detail"),
     path("help/", views.help_center, name="help_center"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
