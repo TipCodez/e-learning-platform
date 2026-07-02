@@ -33,3 +33,9 @@ document.addEventListener("click", async (event) => {
     button.textContent = original;
   }, 1800);
 });
+document.addEventListener("click", (event) => {
+  const toggle = event.target.closest("[data-ai-toggle]");
+  if (!toggle) return;
+  const widget = toggle.closest("[data-ai-widget]") || document.querySelector("[data-ai-widget]");
+  if (widget) widget.classList.toggle("is-open");
+});

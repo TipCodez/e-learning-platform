@@ -1,13 +1,14 @@
-<footer class="footer-band mt-5">
+<footer class="footer-band">
   <div class="container py-5">
-    <div class="row g-4">
+    <div class="row g-4 align-items-start">
       <div class="col-md-5">
-        <h5 class="brand-mark text-white">Acadeval</h5>
+        <h5 class="brand-mark footer-brand"><span class="brand-badge">AV</span><span>Acadeval</span></h5>
         <p class="text-white-50 mb-0">Learn. Test. Certify. Grow.</p>
       </div>
       <div class="col-md-7">
         <div class="row g-3">
           <div class="col-6 col-lg-3"><a href="{% url 'core:about' %}">About</a></div>
+          <div class="col-6 col-lg-3"><a href="{% url 'courses:list' %}">Courses</a></div>
           <div class="col-6 col-lg-3"><a href="{% url 'core:blog' %}">Blog</a></div>
           <div class="col-6 col-lg-3"><a href="{% url 'core:help_center' %}">Help</a></div>
           <div class="col-6 col-lg-3"><a href="{% url 'core:terms' %}">Terms</a></div>

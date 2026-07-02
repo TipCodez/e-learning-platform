@@ -1,18 +1,18 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom">
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
   <div class="container">
-    <a class="navbar-brand brand-mark" href="{% url 'core:home' %}">Acadeval</a>
+    <a class="navbar-brand brand-mark" href="{% url 'core:home' %}"><span class="brand-badge">AV</span><span>Acadeval</span></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
         <li class="nav-item"><a class="nav-link" href="{% url 'courses:list' %}">Courses</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'learning_paths:list' %}">Learning Paths</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'learning_paths:list' %}">Paths</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'core:organization_training' %}">Organizations</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'payments:pricing' %}">Pricing</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'core:blog' %}">Blog</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'discussions:list' %}">Community</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'core:ai_assistant' %}">AI Assistant</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:ai_assistant' %}">AI</a></li>
         {% if user.is_authenticated %}
           <li class="nav-item"><a class="btn btn-outline-primary btn-sm" href="{% url 'dashboards:home' %}">Dashboard</a></li>
           <li class="nav-item">

@@ -1,0 +1,16 @@
+<div class="ai-widget" data-ai-widget>
+  <button class="ai-fab" type="button" data-ai-toggle aria-label="Open AI assistant">AI</button>
+  <section class="ai-panel" data-ai-panel aria-label="Acadeval AI Assistant">
+    <header class="ai-panel-header">
+      <strong>Acadeval AI Assistant</strong>
+      <button type="button" data-ai-toggle aria-label="Close AI assistant">x</button>
+    </header>
+    <div class="ai-panel-body">
+      <div class="ai-message">Ask about courses, certificates, organization training, assignments, or how to use the platform.</div>
+    </div>
+    <form class="ai-panel-form" action="{% url 'core:ai_assistant' %}">
+      <input type="text" placeholder="Ask about Acadeval..." aria-label="Ask about Acadeval">
+      <button type="submit" aria-label="Open assistant">Send</button>
+    </form>
+  </section>
+</div>
