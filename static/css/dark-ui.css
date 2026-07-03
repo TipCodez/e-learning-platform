@@ -492,3 +492,123 @@ body.acadeval-light .ai-widget-button {
   background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
   color: #ffffff !important;
 }
+
+body.acadeval-light .text-white,
+body.acadeval-light .text-light,
+body.acadeval-light .text-white-50,
+body.acadeval-light .article-section .text-slate,
+body.acadeval-light .article-paragraph .text-slate,
+body.acadeval-light .article-table .text-slate,
+body.acadeval-light .article-table h2,
+body.acadeval-light .dashboard-card strong,
+body.acadeval-light .metric-card strong,
+body.acadeval-light .article-tile strong,
+body.acadeval-light .article-callout strong,
+body.acadeval-light .ai-panel-header button {
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .dashboard-card span,
+body.acadeval-light .metric-card span,
+body.acadeval-light .article-section,
+body.acadeval-light .article-paragraph,
+body.acadeval-light .article-section .lead,
+body.acadeval-light .article-quote,
+body.acadeval-light .article-quote cite,
+body.acadeval-light .screenshot-block figcaption,
+body.acadeval-light .ai-message {
+  color: var(--lab-muted) !important;
+}
+
+body.acadeval-light .dashboard-main {
+  background: var(--lab-bg) !important;
+}
+
+body.acadeval-light .article-body,
+body.acadeval-light .article-section,
+body.acadeval-light .article-paragraph,
+body.acadeval-light .article-tile,
+body.acadeval-light .article-callout,
+body.acadeval-light .article-table,
+body.acadeval-light .screenshot-block,
+body.acadeval-light .code-block,
+body.acadeval-light .output-block {
+  background: rgba(255, 255, 255, .96) !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .article-subtitle {
+  border-bottom-color: rgba(0, 120, 212, .22) !important;
+  color: var(--lab-cyan) !important;
+}
+
+body.acadeval-light .article-subtitle::before {
+  border-color: var(--lab-green) !important;
+}
+
+body.acadeval-light .article-tile span,
+body.acadeval-light .article-table th {
+  color: var(--lab-cyan) !important;
+}
+
+body.acadeval-light .article-callout {
+  background: rgba(0, 167, 121, .08) !important;
+  border-left-color: var(--lab-green) !important;
+}
+
+body.acadeval-light .article-quote {
+  border-left-color: var(--lab-cyan) !important;
+}
+
+body.acadeval-light .code-block,
+body.acadeval-light .code-block pre,
+body.acadeval-light .code-block code {
+  background: #f3f7fb !important;
+  color: #162033 !important;
+}
+
+body.acadeval-light .output-block {
+  background: #f0fffa !important;
+  border-color: rgba(0, 167, 121, .24) !important;
+}
+
+body.acadeval-light .output-heading {
+  background: rgba(0, 167, 121, .10) !important;
+  border-bottom-color: rgba(0, 167, 121, .22) !important;
+  color: var(--lab-green) !important;
+}
+
+body.acadeval-light .output-heading strong,
+body.acadeval-light .output-icon {
+  color: var(--lab-green) !important;
+  border-color: var(--lab-green) !important;
+}
+
+body.acadeval-light .output-block pre {
+  color: #162033 !important;
+}
+
+body.acadeval-light .screenshot-block figcaption {
+  background: #eef3f9 !important;
+}
+
+body.acadeval-light .ai-panel,
+body.acadeval-light .ai-panel-header,
+body.acadeval-light .ai-panel-body,
+body.acadeval-light .ai-message {
+  background: #ffffff !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .ai-panel-form input {
+  background: #ffffff !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .alert:not(.alert-success):not(.alert-danger):not(.alert-warning):not(.alert-info) {
+  background: #ffffff !important;
+  color: var(--lab-text) !important;
+}
