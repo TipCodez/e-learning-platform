@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -254,7 +255,7 @@ def manage_lesson_blocks(request, slug, lesson_id):
         block.save()
         messages.success(request, "Content block added.")
         return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
-    return render(request, "courses/manage_lesson_blocks.html", {"course": course, "lesson": lesson, "form": form})
+    return render(request, "courses/manage_lesson_blocks.html", {"course": course, "lesson": lesson, "form": form, "builder_kind": "lesson"})
 
 
 @login_required
@@ -309,6 +310,25 @@ def move_lesson_block(request, slug, lesson_id, block_id, direction):
         swap_with.save(update_fields=["order", "updated_at"])
         messages.success(request, "Content block order updated.")
     return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
+
+
+@login_required
+@require_POST
+def reorder_lesson_blocks(request, slug, lesson_id):
+    course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        return JsonResponse({"ok": False, "error": "Permission denied."}, status=403)
+    ordered_ids = request.POST.getlist("block_order")
+    blocks = {str(block.id): block for block in lesson.content_blocks.filter(id__in=ordered_ids)}
+    if len(blocks) != len(ordered_ids):
+        return JsonResponse({"ok": False, "error": "Invalid block order."}, status=400)
+    for index, block_id in enumerate(ordered_ids, start=1):
+        block = blocks[block_id]
+        if block.order != index:
+            block.order = index
+            block.save(update_fields=["order", "updated_at"])
+    return JsonResponse({"ok": True})
 
 
 @login_required

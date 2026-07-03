@@ -1,10 +1,12 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from core.forms import SupportTicketForm
-from core.models import BlogPost, FAQ
+from core.forms import BlogContentBlockForm, SupportTicketForm
+from core.models import BlogContentBlock, BlogPost, FAQ
 from courses.models import Course
 
 
@@ -108,6 +110,89 @@ def blog(request):
 def blog_detail(request, slug):
     post = get_object_or_404(BlogPost.objects.prefetch_related("blocks"), slug=slug, is_published=True)
     return render(request, "core/blog_detail.html", {"post": post})
+
+
+def _require_platform_admin(request):
+    if not request.user.is_authenticated or not request.user.is_platform_admin:
+        messages.error(request, "Admin access required.")
+        return False
+    return True
+
+
+def manage_blog_blocks(request, slug):
+    if not _require_platform_admin(request):
+        return redirect("dashboards:home")
+    post = get_object_or_404(BlogPost.objects.prefetch_related("blocks"), slug=slug)
+    form = BlogContentBlockForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        block = form.save(commit=False)
+        block.post = post
+        block.save()
+        messages.success(request, "Blog content block added.")
+        return redirect("core:manage_blog_blocks", slug=post.slug)
+    return render(request, "core/manage_blog_blocks.html", {"post": post, "form": form, "builder_kind": "blog"})
+
+
+def edit_blog_block(request, slug, block_id):
+    if not _require_platform_admin(request):
+        return redirect("dashboards:home")
+    post = get_object_or_404(BlogPost, slug=slug)
+    block = get_object_or_404(BlogContentBlock, pk=block_id, post=post)
+    form = BlogContentBlockForm(request.POST or None, request.FILES or None, instance=block)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Blog content block updated.")
+        return redirect("core:manage_blog_blocks", slug=post.slug)
+    return render(request, "core/blog_block_form.html", {"post": post, "block": block, "form": form})
+
+
+@require_POST
+def delete_blog_block(request, slug, block_id):
+    if not _require_platform_admin(request):
+        return redirect("dashboards:home")
+    post = get_object_or_404(BlogPost, slug=slug)
+    block = get_object_or_404(BlogContentBlock, pk=block_id, post=post)
+    block.delete()
+    messages.success(request, "Blog content block deleted.")
+    return redirect("core:manage_blog_blocks", slug=post.slug)
+
+
+@require_POST
+def move_blog_block(request, slug, block_id, direction):
+    if not _require_platform_admin(request):
+        return redirect("dashboards:home")
+    post = get_object_or_404(BlogPost, slug=slug)
+    block = get_object_or_404(BlogContentBlock, pk=block_id, post=post)
+    ordered_blocks = list(post.blocks.order_by("order", "created_at"))
+    index = ordered_blocks.index(block)
+    swap_with = None
+    if direction == "up" and index > 0:
+        swap_with = ordered_blocks[index - 1]
+    elif direction == "down" and index + 1 < len(ordered_blocks):
+        swap_with = ordered_blocks[index + 1]
+    if swap_with:
+        block.order, swap_with.order = swap_with.order, block.order
+        block.save(update_fields=["order", "updated_at"])
+        swap_with.save(update_fields=["order", "updated_at"])
+        messages.success(request, "Blog block order updated.")
+    return redirect("core:manage_blog_blocks", slug=post.slug)
+
+
+@require_POST
+def reorder_blog_blocks(request, slug):
+    if not request.user.is_authenticated or not request.user.is_platform_admin:
+        return JsonResponse({"ok": False, "error": "Permission denied."}, status=403)
+    post = get_object_or_404(BlogPost, slug=slug)
+    ordered_ids = request.POST.getlist("block_order")
+    blocks = {str(block.id): block for block in post.blocks.filter(id__in=ordered_ids)}
+    if len(blocks) != len(ordered_ids):
+        return JsonResponse({"ok": False, "error": "Invalid block order."}, status=400)
+    for index, block_id in enumerate(ordered_ids, start=1):
+        block = blocks[block_id]
+        if block.order != index:
+            block.order = index
+            block.save(update_fields=["order", "updated_at"])
+    return JsonResponse({"ok": True})
 
 
 def help_center(request):

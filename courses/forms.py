@@ -59,18 +59,21 @@ class LessonContentBlockForm(forms.ModelForm):
             "table_data",
         ]
         widgets = {
-            "block_type": forms.Select(attrs={"class": "form-select"}),
+            "block_type": forms.Select(attrs={"class": "form-select", "data-builder-field": "type"}),
             "order": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "subtitle": forms.TextInput(attrs={"class": "form-control"}),
-            "body": forms.Textarea(attrs={"class": "form-control", "rows": 6}),
+            "title": forms.TextInput(attrs={"class": "form-control", "data-builder-field": "title"}),
+            "subtitle": forms.TextInput(attrs={"class": "form-control", "data-builder-field": "subtitle"}),
+            "body": forms.Textarea(attrs={"class": "form-control", "rows": 6, "data-builder-field": "body"}),
             "code_language": forms.TextInput(attrs={"class": "form-control", "placeholder": "python, bash, html"}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control", "data-image-preview-input": ""}),
             "image_alt": forms.TextInput(attrs={"class": "form-control"}),
             "table_data": forms.Textarea(
                 attrs={
                     "class": "form-control",
                     "rows": 5,
                     "placeholder": "Header A|Header B\nValue A|Value B",
+                    "data-builder-field": "table",
+                    "data-table-source": "",
                 }
             ),
         }

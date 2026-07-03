@@ -612,3 +612,58 @@ body.acadeval-light .alert:not(.alert-success):not(.alert-danger):not(.alert-war
   background: #ffffff !important;
   color: var(--lab-text) !important;
 }
+
+.builder-tools {
+  border: 1px solid var(--lab-border, #d8e0ec);
+  border-radius: 8px;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.builder-live-preview .article-body {
+  min-height: 120px;
+  padding: 1rem;
+}
+
+.builder-image-preview {
+  margin-top: 1rem;
+}
+
+.builder-image-preview img {
+  border: 1px solid var(--lab-border, #d8e0ec);
+  border-radius: 8px;
+  display: block;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+  width: 100%;
+}
+
+.builder-block-card {
+  cursor: grab;
+}
+
+.builder-block-card.is-dragging {
+  cursor: grabbing;
+  opacity: .6;
+  outline: 2px dashed var(--lab-cyan, #0078d4);
+}
+
+.builder-drag-handle {
+  align-items: center;
+  background: var(--lab-surface-strong, #eef3f9);
+  border: 1px solid var(--lab-border, #d8e0ec);
+  border-radius: 8px;
+  color: var(--lab-text, #101828);
+  cursor: grab;
+  display: inline-flex;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-weight: 900;
+  height: 36px;
+  justify-content: center;
+  min-width: 36px;
+}
+
+.builder-sort-status {
+  min-height: 1.5rem;
+}

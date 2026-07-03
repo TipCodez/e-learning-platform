@@ -5,6 +5,9 @@
   <div class="container narrow">
     <span class="eyebrow">{{ post.published_at|date:"M d, Y" }}</span>
     <h1 class="display-5 fw-bold text-slate">{{ post.title }}</h1>
+    {% if user.is_authenticated and user.is_platform_admin %}
+      <a class="btn btn-outline-primary mt-3" href="{% url 'core:manage_blog_blocks' post.slug %}">Manage Content Blocks</a>
+    {% endif %}
     <p class="lead">{{ post.excerpt }}</p>
   </div>
 </section>

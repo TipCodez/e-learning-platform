@@ -15,21 +15,39 @@
 
     <div class="row g-4">
       <div class="col-lg-5">
-        <form class="dashboard-card" method="post" enctype="multipart/form-data">
+        <form class="dashboard-card content-builder-form" method="post" enctype="multipart/form-data" data-builder-form>
           {% csrf_token %}
           <h2 class="h5 text-slate">Add Dynamic Block</h2>
           <p class="text-muted">Choose any block type: code fence, output, screenshot, table, section, tile, subtitle, quote, callout, or paragraph.</p>
           {{ form.as_p }}
-          <button class="btn btn-primary" type="submit">Add Block</button>
+          <div class="builder-tools">
+            <h3 class="h6 text-slate">Table helper</h3>
+            <div class="row g-2">
+              <div class="col-6"><input class="form-control" type="number" min="1" max="8" value="3" data-table-columns aria-label="Table columns"></div>
+              <div class="col-6"><input class="form-control" type="number" min="1" max="20" value="4" data-table-rows aria-label="Table rows"></div>
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2" type="button" data-build-table>Insert table scaffold</button>
+          </div>
+          <div class="builder-image-preview" data-image-preview></div>
+          <div class="builder-live-preview mt-3">
+            <h3 class="h6 text-slate">Live Preview</h3>
+            <div class="article-body" data-live-preview></div>
+          </div>
+          <button class="btn btn-primary mt-3" type="submit">Add Block</button>
         </form>
       </div>
       <div class="col-lg-7">
+        <div class="builder-sort-status text-muted mb-2" data-sort-status>Drag blocks to reorder. Changes save automatically.</div>
+        <div data-sortable-list data-reorder-url="{% url 'courses:reorder_lesson_blocks' course.slug lesson.id %}">
         {% for block in lesson.content_blocks.all %}
-          <div class="dashboard-card mb-3">
+          <div class="dashboard-card mb-3 builder-block-card" draggable="true" data-block-id="{{ block.id }}">
             <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-              <div>
-                <strong>{{ block.order }}. {{ block.get_block_type_display }}</strong>
-                <span>{{ block.title|default:block.subtitle|default:"Untitled block" }}</span>
+              <div class="d-flex gap-2">
+                <button class="builder-drag-handle" type="button" aria-label="Drag block" title="Drag to reorder">::</button>
+                <div>
+                  <strong><span data-order-label>{{ block.order }}</span>. {{ block.get_block_type_display }}</strong>
+                  <span>{{ block.title|default:block.subtitle|default:"Untitled block" }}</span>
+                </div>
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <a class="btn btn-sm btn-outline-primary" href="{% url 'courses:edit_lesson_block' course.slug lesson.id block.id %}">Edit</a>
@@ -57,6 +75,7 @@
         {% empty %}
           <div class="empty-state">No content blocks yet. Add the first block from the form.</div>
         {% endfor %}
+        </div>
       </div>
     </div>
   </div>

@@ -1,0 +1,40 @@
+{% if block.block_type == "subtitle" %}
+  <h2 class="article-subtitle">{{ block.title|default:block.body }}</h2>
+  {% if block.subtitle %}<p class="text-muted">{{ block.subtitle }}</p>{% endif %}
+{% elif block.block_type == "section" %}
+  <section class="article-section">
+    {% if block.title %}<h2 class="h3 text-slate">{{ block.title }}</h2>{% endif %}
+    {% if block.subtitle %}<p class="lead">{{ block.subtitle }}</p>{% endif %}
+    {{ block.body|linebreaks }}
+  </section>
+{% elif block.block_type == "code" %}
+  <div class="code-block" data-code-block>
+    <div class="code-toolbar"><span class="code-language">{{ block.code_language|default:"code" }}</span><button class="code-copy-button" type="button" data-copy-code aria-label="Copy code">Copy</button></div>
+    <pre><code>{{ block.body }}</code></pre>
+  </div>
+{% elif block.block_type == "output" %}
+  <div class="output-block"><div class="output-heading"><span class="output-icon">&gt;_</span><strong>{{ block.title|default:"Output" }}</strong></div><pre>{{ block.body }}</pre></div>
+{% elif block.block_type == "screenshot" %}
+  <figure class="screenshot-block">
+    {% if block.image %}<img src="{{ block.image.url }}" alt="{{ block.image_alt|default:block.title }}">{% endif %}
+    {% if block.title or block.subtitle %}<figcaption>{{ block.title }}{% if block.subtitle %} - {{ block.subtitle }}{% endif %}</figcaption>{% endif %}
+  </figure>
+{% elif block.block_type == "table" %}
+  <div class="table-responsive article-table">
+    {% if block.title %}<h2 class="h5 text-slate">{{ block.title }}</h2>{% endif %}
+    <table class="table table-striped align-middle">
+      {% for row in block.table_rows %}
+        {% if forloop.first %}<thead><tr>{% for cell in row %}<th>{{ cell }}</th>{% endfor %}</tr></thead><tbody>{% else %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% elif block.block_type == "tile" %}
+  <div class="article-tile">{% if block.title %}<strong>{{ block.title }}</strong>{% endif %}{% if block.subtitle %}<span>{{ block.subtitle }}</span>{% endif %}{{ block.body|linebreaks }}</div>
+{% elif block.block_type == "quote" %}
+  <blockquote class="article-quote">{{ block.body|linebreaks }}{% if block.title %}<cite>{{ block.title }}</cite>{% endif %}</blockquote>
+{% elif block.block_type == "callout" %}
+  <div class="article-callout">{% if block.title %}<strong>{{ block.title }}</strong>{% endif %}{{ block.body|linebreaks }}</div>
+{% else %}
+  <div class="article-paragraph">{% if block.title %}<h2 class="h4 text-slate">{{ block.title }}</h2>{% endif %}{{ block.body|linebreaks }}</div>
+{% endif %}

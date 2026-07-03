@@ -2,8 +2,8 @@
 {% block content %}
 <section class="auth-section">
   <div class="auth-card wide">
-    <span class="eyebrow">{{ lesson.title }}</span>
-    <h1 class="h2 text-slate">Edit Content Block</h1>
+    <span class="eyebrow">{{ post.title }}</span>
+    <h1 class="h2 text-slate">Edit Blog Content Block</h1>
     <form method="post" enctype="multipart/form-data" data-builder-form>
       {% csrf_token %}
       {{ form.as_p }}
@@ -21,7 +21,7 @@
         <div class="article-body" data-live-preview></div>
       </div>
       <button class="btn btn-primary mt-3" type="submit">Update Block</button>
-      <a class="btn btn-outline-primary mt-3" href="{% url 'courses:manage_lesson_blocks' course.slug lesson.id %}">Cancel</a>
+      <a class="btn btn-outline-primary mt-3" href="{% url 'core:manage_blog_blocks' post.slug %}">Cancel</a>
     </form>
   </div>
 </section>
