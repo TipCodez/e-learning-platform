@@ -1,0 +1,15 @@
+<div class="page-nav-strip">
+  <div class="container">
+    <div class="page-nav-actions">
+      <button class="btn btn-outline-primary btn-sm" type="button" data-back-button>Back</button>
+      <a class="btn btn-outline-primary btn-sm" href="{% url 'core:home' %}">Home</a>
+      <a class="btn btn-outline-primary btn-sm" href="{% url 'courses:list' %}">Courses</a>
+      <a class="btn btn-outline-primary btn-sm" href="{% url 'core:search' %}">Search</a>
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary btn-sm" href="{% url 'dashboards:home' %}">Dashboard</a>
+      {% else %}
+        <a class="btn btn-primary btn-sm" href="{% url 'accounts:login' %}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</div>

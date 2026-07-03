@@ -667,3 +667,29 @@ body.acadeval-light .alert:not(.alert-success):not(.alert-danger):not(.alert-war
 .builder-sort-status {
   min-height: 1.5rem;
 }
+
+.page-nav-strip {
+  background: rgba(7, 11, 22, .88);
+  border-bottom: 1px solid var(--lab-border, #293244);
+  position: sticky;
+  top: 82px;
+  z-index: 1010;
+}
+
+.page-nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .75rem 0;
+}
+
+body.acadeval-light .page-nav-strip {
+  background: rgba(255, 255, 255, .92);
+  border-bottom-color: var(--lab-border, #d8e0ec);
+}
+
+@media (max-width: 991px) {
+  .page-nav-strip {
+    position: static;
+  }
+}

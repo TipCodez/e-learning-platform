@@ -61,6 +61,16 @@ document.addEventListener("click", (event) => {
   if (widget) widget.classList.toggle("is-open");
 });
 
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-back-button]");
+  if (!button) return;
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "/";
+  }
+});
+
 const escapeHtml = (value) => String(value || "")
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
