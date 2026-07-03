@@ -1,0 +1,246 @@
+/* Forced professional dark UI shell */
+body.acadeval-dark {
+  --lab-bg: #070b16;
+  --lab-surface: #101624;
+  --lab-surface-strong: #171d2b;
+  --lab-border: #293244;
+  --lab-border-soft: rgba(148, 163, 184, .2);
+  --lab-text: #f8fafc;
+  --lab-muted: #a7b1c2;
+  --lab-cyan: #06dffc;
+  --lab-green: #00f5a0;
+  --lab-shadow: 0 24px 70px rgba(0, 0, 0, .34);
+  background: var(--lab-bg) !important;
+  color: var(--lab-text) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body.acadeval-dark main,
+body.acadeval-dark .hero-section,
+body.acadeval-dark .page-hero,
+body.acadeval-dark .bg-soft,
+body.acadeval-dark .auth-section,
+body.acadeval-dark .dashboard-shell {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(0, 245, 160, .10), transparent 34%),
+    radial-gradient(circle at 82% 10%, rgba(6, 223, 252, .13), transparent 36%),
+    var(--lab-bg) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-dark .app-navbar,
+body.acadeval-dark .site-footer {
+  background: rgba(7, 11, 22, .96) !important;
+  border-color: var(--lab-border) !important;
+  backdrop-filter: blur(18px);
+}
+
+body.acadeval-dark .app-navbar {
+  border-bottom: 1px solid var(--lab-border) !important;
+  min-height: 82px;
+}
+
+body.acadeval-dark .navbar-brand,
+body.acadeval-dark .footer-brand,
+body.acadeval-dark h1,
+body.acadeval-dark h2,
+body.acadeval-dark h3,
+body.acadeval-dark h4,
+body.acadeval-dark h5,
+body.acadeval-dark h6,
+body.acadeval-dark .display-1,
+body.acadeval-dark .display-2,
+body.acadeval-dark .display-3,
+body.acadeval-dark .display-4,
+body.acadeval-dark .display-5,
+body.acadeval-dark .display-6 {
+  color: var(--lab-text) !important;
+  letter-spacing: 0 !important;
+}
+
+body.acadeval-dark .navbar-brand,
+body.acadeval-dark .footer-brand {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+body.acadeval-dark .brand-badge {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  color: #02111f !important;
+  font-weight: 950;
+  box-shadow: 0 12px 34px rgba(0, 245, 160, .22);
+}
+
+body.acadeval-dark .nav-link {
+  color: var(--lab-muted) !important;
+  font-weight: 800;
+}
+
+body.acadeval-dark .nav-link:hover,
+body.acadeval-dark .nav-link:focus,
+body.acadeval-dark .nav-link.active {
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-dark .navbar-toggler {
+  border-color: var(--lab-border) !important;
+  background: var(--lab-surface-strong) !important;
+}
+
+body.acadeval-dark .navbar-toggler-icon {
+  filter: invert(1) grayscale(1);
+}
+
+body.acadeval-dark .btn-primary,
+body.acadeval-dark .btn-accent {
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  border-color: transparent !important;
+  color: #02111f !important;
+  font-weight: 900;
+  box-shadow: 0 16px 36px rgba(6, 223, 252, .20);
+}
+
+body.acadeval-dark .btn-outline-primary,
+body.acadeval-dark .btn-outline-secondary,
+body.acadeval-dark .btn-light {
+  background: var(--lab-surface-strong) !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  font-weight: 800;
+}
+
+body.acadeval-dark .btn-link,
+body.acadeval-dark a {
+  color: var(--lab-cyan);
+}
+
+body.acadeval-dark .hero-panel,
+body.acadeval-dark .auth-card,
+body.acadeval-dark .course-card,
+body.acadeval-dark .path-card,
+body.acadeval-dark .blog-card,
+body.acadeval-dark .pricing-card,
+body.acadeval-dark .dashboard-card,
+body.acadeval-dark .metric-card,
+body.acadeval-dark .empty-state,
+body.acadeval-dark .article-body,
+body.acadeval-dark .content-card,
+body.acadeval-dark .lesson-shell,
+body.acadeval-dark .assignment-card,
+body.acadeval-dark .quiz-card,
+body.acadeval-dark .card,
+body.acadeval-dark .list-group-item,
+body.acadeval-dark .modal-content,
+body.acadeval-dark .dropdown-menu {
+  background: rgba(16, 22, 36, .94) !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  box-shadow: var(--lab-shadow);
+}
+
+body.acadeval-dark .card *,
+body.acadeval-dark .dashboard-card *,
+body.acadeval-dark .course-card *,
+body.acadeval-dark .blog-card *,
+body.acadeval-dark .article-body *,
+body.acadeval-dark .lesson-shell * {
+  border-color: var(--lab-border-soft);
+}
+
+body.acadeval-dark p,
+body.acadeval-dark .text-muted,
+body.acadeval-dark .lead,
+body.acadeval-dark .small,
+body.acadeval-dark small,
+body.acadeval-dark .form-text,
+body.acadeval-dark .breadcrumb,
+body.acadeval-dark .breadcrumb-item,
+body.acadeval-dark .footer-link {
+  color: var(--lab-muted) !important;
+}
+
+body.acadeval-dark .badge,
+body.acadeval-dark .eyebrow,
+body.acadeval-dark .section-eyebrow {
+  color: var(--lab-green) !important;
+  background: rgba(0, 245, 160, .10) !important;
+  border: 1px solid rgba(0, 245, 160, .22) !important;
+  font-weight: 900;
+}
+
+body.acadeval-dark .form-control,
+body.acadeval-dark .form-select,
+body.acadeval-dark textarea,
+body.acadeval-dark input[type="text"],
+body.acadeval-dark input[type="email"],
+body.acadeval-dark input[type="password"],
+body.acadeval-dark input[type="number"],
+body.acadeval-dark input[type="url"] {
+  background: #090f1d !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-dark .form-control:focus,
+body.acadeval-dark .form-select:focus {
+  border-color: var(--lab-cyan) !important;
+  box-shadow: 0 0 0 .2rem rgba(6, 223, 252, .14) !important;
+}
+
+body.acadeval-dark .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--lab-text);
+  --bs-table-border-color: var(--lab-border);
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-dark .table thead th {
+  color: var(--lab-green) !important;
+  background: rgba(0, 245, 160, .08) !important;
+}
+
+body.acadeval-dark pre,
+body.acadeval-dark code,
+body.acadeval-dark .rich-code-block {
+  background: #050917 !important;
+  color: #dbeafe !important;
+  border-color: var(--lab-border) !important;
+}
+
+body.acadeval-dark .rich-output-block {
+  background: #021917 !important;
+  border-color: rgba(0, 245, 160, .32) !important;
+}
+
+body.acadeval-dark .progress {
+  background: #111827 !important;
+}
+
+body.acadeval-dark .progress-bar {
+  background: linear-gradient(90deg, var(--lab-cyan), var(--lab-green)) !important;
+}
+
+body.acadeval-dark .toast-stack .alert {
+  background: var(--lab-surface-strong) !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-dark .ai-widget-panel,
+body.acadeval-dark .ai-widget-button {
+  background: rgba(23, 29, 43, .96) !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  box-shadow: var(--lab-shadow);
+}
+
+body.acadeval-dark .ai-widget-button {
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  color: #02111f !important;
+}
