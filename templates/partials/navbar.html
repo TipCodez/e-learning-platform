@@ -13,12 +13,18 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'core:blog' %}">Blog</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'discussions:list' %}">Community</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'core:ai_assistant' %}">AI</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'core:search' %}">Search</a></li>
         <li class="nav-item">
           <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to light mode" title="Switch theme">
             <span class="theme-toggle-icon" data-theme-icon>☾</span>
           </button>
         </li>
         {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'notifications:list' %}">
+              Alerts{% if unread_notification_count %} <span class="badge text-bg-danger">{{ unread_notification_count }}</span>{% endif %}
+            </a>
+          </li>
           <li class="nav-item"><a class="btn btn-outline-primary btn-sm" href="{% url 'dashboards:home' %}">Dashboard</a></li>
           <li class="nav-item">
             <form method="post" action="{% url 'accounts:logout' %}">

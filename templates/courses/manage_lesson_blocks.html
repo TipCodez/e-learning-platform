@@ -33,6 +33,8 @@
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <a class="btn btn-sm btn-outline-primary" href="{% url 'courses:edit_lesson_block' course.slug lesson.id block.id %}">Edit</a>
+                <form method="post" action="{% url 'courses:move_lesson_block' course.slug lesson.id block.id 'up' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Up</button></form>
+                <form method="post" action="{% url 'courses:move_lesson_block' course.slug lesson.id block.id 'down' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Down</button></form>
                 <form method="post" action="{% url 'courses:delete_lesson_block' course.slug lesson.id block.id %}">
                   {% csrf_token %}
                   <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>

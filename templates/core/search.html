@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Search | Acadeval{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <h1 class="display-5 fw-bold text-slate">Search Acadeval</h1>
+    <form class="d-flex gap-2 mt-3">
+      <input class="form-control" name="q" value="{{ query }}" placeholder="Search courses, blog posts, and help">
+      <button class="btn btn-primary">Search</button>
+    </form>
+  </div>
+</section>
+<section class="section-pad">
+  <div class="container">
+    {% if query %}
+      <div class="row g-4">
+        <div class="col-lg-4"><h2 class="h5 text-slate">Courses</h2>{% for course in courses %}<div class="dashboard-card mb-2"><strong>{{ course.title }}</strong><p>{{ course.description|truncatewords:18 }}</p><a href="{{ course.get_absolute_url }}">Open course</a></div>{% empty %}<div class="empty-state">No course matches.</div>{% endfor %}</div>
+        <div class="col-lg-4"><h2 class="h5 text-slate">Blog</h2>{% for post in posts %}<div class="dashboard-card mb-2"><strong>{{ post.title }}</strong><p>{{ post.excerpt|default:post.content|truncatewords:18 }}</p><a href="{% url 'core:blog_detail' post.slug %}">Read post</a></div>{% empty %}<div class="empty-state">No blog matches.</div>{% endfor %}</div>
+        <div class="col-lg-4"><h2 class="h5 text-slate">Help</h2>{% for faq in faqs %}<div class="dashboard-card mb-2"><strong>{{ faq.question }}</strong><p>{{ faq.answer|truncatewords:18 }}</p></div>{% empty %}<div class="empty-state">No help matches.</div>{% endfor %}</div>
+      </div>
+    {% else %}
+      <div class="empty-state">Enter a search term to find courses, articles, and help answers.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

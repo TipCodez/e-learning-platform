@@ -20,14 +20,29 @@ class OrganizationLearnerForm(forms.ModelForm):
 
 class BulkLearnerUploadForm(forms.Form):
     emails = forms.CharField(
+        required=False,
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 7, "placeholder": "one learner email per line"}),
         help_text="Existing users are attached. Missing users are created as learner accounts with unusable passwords.",
+    )
+    upload = forms.FileField(
+        required=False,
+        help_text="Optional CSV or text file. Put learner emails in the first column.",
+        widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": ".csv,.txt"}),
     )
     department = forms.CharField(max_length=120, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))
     active = forms.BooleanField(required=False, initial=True, widget=forms.CheckboxInput(attrs={"class": "form-check-input"}))
 
     def clean_emails(self):
-        raw = self.cleaned_data["emails"].replace(",", "\n")
+        raw = self.cleaned_data.get("emails", "").replace(",", "\n")
+        upload = self.files.get("upload")
+        if upload:
+            if upload.size > 1024 * 512:
+                raise forms.ValidationError("Upload a CSV or text file smaller than 512 KB.")
+            try:
+                uploaded_text = upload.read().decode("utf-8-sig")
+            except UnicodeDecodeError as exc:
+                raise forms.ValidationError("Upload must be UTF-8 encoded.") from exc
+            raw = f"{raw}\n{uploaded_text.replace(',', '\n')}"
         emails = []
         for line in raw.splitlines():
             email = line.strip().lower()
@@ -38,7 +53,9 @@ class BulkLearnerUploadForm(forms.Form):
                     raise forms.ValidationError(f"Invalid email address: {email}") from exc
                 emails.append(email)
         if not emails:
-            raise forms.ValidationError("Add at least one learner email.")
+            raise forms.ValidationError("Add at least one learner email or upload a CSV file.")
+        if len(emails) > 500:
+            raise forms.ValidationError("Process 500 learners or fewer at a time.")
         return emails
 
 

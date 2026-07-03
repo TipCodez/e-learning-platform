@@ -3,6 +3,7 @@ import csv
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.db.models import Avg, Count
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -58,7 +59,7 @@ def bulk_learners(request):
     if not _require_org(request.user):
         messages.error(request, "Organization access required.")
         return redirect("dashboards:home")
-    form = BulkLearnerUploadForm(request.POST or None)
+    form = BulkLearnerUploadForm(request.POST or None, request.FILES or None)
     result = None
     if request.method == "POST" and form.is_valid():
         created_users = 0
@@ -109,7 +110,21 @@ def reports(request):
         return redirect("dashboards:home")
     records = OrganizationLearner.objects.select_related("learner").filter(organization=request.user)
     learner_ids = records.values_list("learner_id", flat=True)
-    enrollments = Enrollment.objects.filter(student_id__in=learner_ids)
+    enrollments = Enrollment.objects.select_related("course", "student").filter(student_id__in=learner_ids)
+    course_rows = []
+    for row in enrollments.values("course__title").annotate(
+        learners=Count("student", distinct=True),
+        completed=Count("id", filter=models.Q(status=Enrollment.Status.COMPLETED)),
+        average_progress=Avg("progress__percentage"),
+    ).order_by("course__title"):
+        course_rows.append(
+            {
+                "course": row["course__title"],
+                "learners": row["learners"],
+                "completed": row["completed"],
+                "average_progress": round(row["average_progress"] or 0, 1),
+            }
+        )
     summary = {
         "learners": records.count(),
         "active_learners": records.filter(active=True).count(),
@@ -119,7 +134,7 @@ def reports(request):
         "average_progress": round(CourseProgress.objects.filter(enrollment__student_id__in=learner_ids).aggregate(avg=Avg("percentage"))["avg"] or 0, 1),
     }
     reports_qs = OrganizationReport.objects.filter(organization=request.user).order_by("-generated_at")
-    return render(request, "organizations/reports.html", {"summary": summary, "reports": reports_qs})
+    return render(request, "organizations/reports.html", {"summary": summary, "reports": reports_qs, "course_rows": course_rows})
 
 
 @login_required
@@ -128,10 +143,10 @@ def generate_report(request):
     if not _require_org(request.user):
         messages.error(request, "Organization access required.")
         return redirect("dashboards:home")
-    learner_ids = OrganizationLearner.objects.filter(organization=request.user).values_list("learner_id", flat=True)
+    learner_ids = list(OrganizationLearner.objects.filter(organization=request.user).values_list("learner_id", flat=True))
     enrollments = Enrollment.objects.filter(student_id__in=learner_ids)
     summary = (
-        f"Learners: {len(list(learner_ids))}\n"
+        f"Learners: {len(learner_ids)}\n"
         f"Enrollments: {enrollments.count()}\n"
         f"Completed enrollments: {enrollments.filter(status=Enrollment.Status.COMPLETED).count()}\n"
         f"Courses represented: {enrollments.values('course').distinct().count()}"
@@ -149,9 +164,21 @@ def export_report(request):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="organization-learners.csv"'
     writer = csv.writer(response)
-    writer.writerow(["email", "department", "active", "enrollments", "completed"])
+    writer.writerow(["email", "department", "active", "course", "progress", "status", "completed_at"])
     records = OrganizationLearner.objects.select_related("learner").filter(organization=request.user)
     for record in records:
-        enrollments = Enrollment.objects.filter(student=record.learner)
-        writer.writerow([record.learner.email, record.department, record.active, enrollments.count(), enrollments.filter(status=Enrollment.Status.COMPLETED).count()])
+        enrollments = Enrollment.objects.select_related("course", "progress").filter(student=record.learner)
+        if not enrollments:
+            writer.writerow([record.learner.email, record.department, record.active, "", 0, "not_enrolled", ""])
+        for enrollment in enrollments:
+            progress = getattr(enrollment, "progress", None)
+            writer.writerow([
+                record.learner.email,
+                record.department,
+                record.active,
+                enrollment.course.title,
+                progress.percentage if progress else 0,
+                enrollment.status,
+                enrollment.completed_at or "",
+            ])
     return response

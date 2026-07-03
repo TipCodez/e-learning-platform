@@ -24,3 +24,9 @@ class GradeSubmissionForm(forms.ModelForm):
         if score < 0 or score > max_score:
             raise forms.ValidationError(f"Score must be between 0 and {max_score}.")
         return score
+
+    def clean_feedback(self):
+        feedback = self.cleaned_data["feedback"].strip()
+        if len(feedback) < 10:
+            raise forms.ValidationError("Give the learner meaningful feedback of at least 10 characters.")
+        return feedback

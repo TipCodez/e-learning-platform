@@ -20,6 +20,7 @@ urlpatterns = [
     path("<slug:slug>/lessons/", views.manage_lessons, name="manage_lessons"),
     path("<slug:slug>/lessons/<int:lesson_id>/blocks/", views.manage_lesson_blocks, name="manage_lesson_blocks"),
     path("<slug:slug>/lessons/<int:lesson_id>/blocks/<int:block_id>/edit/", views.edit_lesson_block, name="edit_lesson_block"),
+    path("<slug:slug>/lessons/<int:lesson_id>/blocks/<int:block_id>/move/<str:direction>/", views.move_lesson_block, name="move_lesson_block"),
     path("<slug:slug>/lessons/<int:lesson_id>/blocks/<int:block_id>/delete/", views.delete_lesson_block, name="delete_lesson_block"),
     path("<slug:slug>/reviews/", views.submit_review, name="review"),
     path("<slug:slug>/wishlist/", views.toggle_wishlist, name="toggle_wishlist"),

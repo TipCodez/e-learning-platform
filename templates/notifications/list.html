@@ -1,1 +1,31 @@
-﻿{% extends "base.html" %}{% block content %}<section class="section-pad"><div class="container"><div class="d-flex justify-content-between"><h1 class="h2 text-slate">Notifications</h1><a href="{% url 'notifications:read_all' %}" class="btn btn-outline-primary">Mark all read</a></div>{% for notification in notifications %}<div class="dashboard-card mb-2"><strong>{{ notification.title }}</strong><p>{{ notification.message }}</p></div>{% empty %}<div class="empty-state">No notifications.</div>{% endfor %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex justify-content-between mb-3">
+      <h1 class="h2 text-slate">Notifications</h1>
+      <form method="post" action="{% url 'notifications:read_all' %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-primary">Mark all read</button>
+      </form>
+    </div>
+    {% for notification in notifications %}
+      <div class="dashboard-card mb-2 {% if not notification.read %}border border-info{% endif %}">
+        <strong>{{ notification.title }}</strong>
+        <p>{{ notification.message }}</p>
+        <span>{{ notification.get_notification_type_display }} &middot; {{ notification.created_at|date:"M d, Y H:i" }}</span>
+        {% if not notification.read %}
+          <form method="post" action="{% url 'notifications:mark_read' notification.id %}" class="mt-2">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-primary">Open / Mark Read</button>
+          </form>
+        {% elif notification.link %}
+          <a class="btn btn-sm btn-outline-primary mt-2" href="{{ notification.link }}">Open</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="empty-state">No notifications.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

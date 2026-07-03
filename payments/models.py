@@ -69,10 +69,28 @@ class Invoice(models.Model):
 
 
 class InstructorPayout(models.Model):
+    class Status(models.TextChoices):
+        REQUESTED = "requested", "Requested"
+        APPROVED = "approved", "Approved"
+        PAID = "paid", "Paid"
+        REJECTED = "rejected", "Rejected"
+
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="payouts")
     course = models.ForeignKey("courses.Course", on_delete=models.SET_NULL, blank=True, null=True)
     gross_amount = models.DecimalField(max_digits=10, decimal_places=2)
     platform_commission = models.DecimalField(max_digits=10, decimal_places=2)
     net_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.REQUESTED)
+    payout_method = models.CharField(max_length=80, blank=True)
+    payout_account = models.CharField(max_length=180, blank=True)
+    requested_note = models.TextField(blank=True)
+    admin_note = models.TextField(blank=True)
     paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.instructor} payout {self.net_amount}"

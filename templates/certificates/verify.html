@@ -1,1 +1,30 @@
-﻿{% extends "base.html" %}{% block content %}<section class="page-hero"><div class="container narrow"><h1 class="h2 text-slate">Certificate Verification</h1>{% if certificate.is_revoked %}<div class="alert alert-danger">This certificate has been revoked.</div>{% else %}<div class="alert alert-success">Valid certificate.</div>{% endif %}<p><strong>Student:</strong> {{ certificate.student.get_full_name|default:certificate.student.username }}</p><p><strong>Course:</strong> {{ certificate.course.title }}</p><p><strong>Issued:</strong> {{ certificate.issue_date }}</p></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<section class="page-hero">
+  <div class="container narrow">
+    <span class="eyebrow">Public certificate verification</span>
+    <h1 class="h2 text-slate">Certificate Verification</h1>
+    {% if certificate.is_revoked %}
+      <div class="alert alert-danger">This certificate has been revoked.</div>
+    {% else %}
+      <div class="alert alert-success">Valid certificate.</div>
+    {% endif %}
+    <div class="dashboard-card mt-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-8">
+          <p><strong>Student:</strong> {{ certificate.student.get_full_name|default:certificate.student.email }}</p>
+          <p><strong>Course:</strong> {{ certificate.course.title }}</p>
+          <p><strong>Instructor:</strong> {{ certificate.instructor_name }}</p>
+          <p><strong>Issued:</strong> {{ certificate.issue_date }}</p>
+          <p><strong>Certificate ID:</strong> {{ certificate.certificate_id }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+          {% if certificate.qr_code %}
+            <img src="{{ certificate.qr_code.url }}" alt="Certificate QR code" style="width: 140px; height: 140px;">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,13 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from courses.models import Course
-from payments.forms import CheckoutForm
-from payments.models import Invoice, Payment, SubscriptionPlan
+from payments.forms import CheckoutForm, InstructorPayoutRequestForm
+from payments.models import InstructorPayout, Invoice, Payment, SubscriptionPlan
 from payments.services import CouponError, confirm_course_payment, create_course_payment, discounted_amount, validate_coupon
 
 
@@ -118,3 +119,36 @@ def invoice_download(request, invoice_number):
 def history(request):
     payments = request.user.payments.select_related("course", "coupon", "invoice")
     return render(request, "payments/history.html", {"payments": payments})
+
+
+@login_required
+@require_POST
+def request_instructor_payout(request):
+    if not (request.user.is_instructor or request.user.is_platform_admin):
+        messages.error(request, "Instructor access required.")
+        return redirect("dashboards:home")
+    form = InstructorPayoutRequestForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Add a payout method and account before requesting payout.")
+        return redirect("dashboards:instructor_earnings")
+    successful_payments = Payment.objects.filter(course__instructor=request.user, status=Payment.Status.SUCCESS)
+    gross = successful_payments.aggregate(total=Sum("amount"))["total"] or 0
+    paid_or_pending = InstructorPayout.objects.filter(
+        instructor=request.user,
+        status__in=[InstructorPayout.Status.REQUESTED, InstructorPayout.Status.APPROVED, InstructorPayout.Status.PAID],
+    ).aggregate(total=Sum("net_amount"))["total"] or 0
+    commission_rate = 20
+    commission = gross * commission_rate / 100
+    available = max(gross - commission - paid_or_pending, 0)
+    if available <= 0:
+        messages.error(request, "There are no available earnings to request yet.")
+        return redirect("dashboards:instructor_earnings")
+    payout = form.save(commit=False)
+    payout.instructor = request.user
+    payout.gross_amount = gross
+    payout.platform_commission = commission
+    payout.net_amount = available
+    payout.status = InstructorPayout.Status.REQUESTED
+    payout.save()
+    messages.success(request, "Payout request submitted for admin review.")
+    return redirect("dashboards:instructor_earnings")

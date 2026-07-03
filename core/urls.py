@@ -19,6 +19,7 @@ urlpatterns = [
     path("blog/<slug:slug>/", views.blog_detail, name="blog_detail"),
     path("help/", views.help_center, name="help_center"),
     path("ai-assistant/", views.ai_assistant, name="ai_assistant"),
+    path("search/", views.search, name="search"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
 ]

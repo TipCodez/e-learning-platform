@@ -10,7 +10,8 @@ from courses.models import Course
 from enrollments.models import CourseProgress, Enrollment
 from gamification.models import Leaderboard, LearningStreak
 from organizations.models import OrganizationLearner
-from payments.models import Payment
+from payments.forms import InstructorPayoutRequestForm
+from payments.models import InstructorPayout, Payment
 
 
 @login_required
@@ -91,6 +92,11 @@ def instructor_earnings(request):
     commission_rate = 20
     commission = gross * commission_rate / 100
     net = gross - commission
+    payouts = InstructorPayout.objects.filter(instructor=request.user)
+    paid_or_pending = payouts.filter(
+        status__in=[InstructorPayout.Status.REQUESTED, InstructorPayout.Status.APPROVED, InstructorPayout.Status.PAID]
+    ).aggregate(total=Sum("net_amount"))["total"] or 0
+    available = max(net - paid_or_pending, 0)
     return render(
         request,
         "dashboards/instructor_earnings.html",
@@ -100,6 +106,9 @@ def instructor_earnings(request):
             "commission_rate": commission_rate,
             "commission": commission,
             "net": net,
+            "available": available,
+            "payouts": payouts,
+            "payout_form": InstructorPayoutRequestForm(),
         },
     )
 

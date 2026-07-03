@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -13,11 +13,15 @@ from gamification.services import record_course_completion, record_lesson_comple
 
 
 def course_list(request):
-    courses = Course.objects.select_related("category", "instructor").filter(status=Course.Status.PUBLISHED)
+    courses = Course.objects.select_related("category", "instructor").filter(status=Course.Status.PUBLISHED).annotate(
+        rating_average=Avg("reviews__rating", filter=Q(reviews__is_approved=True)),
+        rating_count=Count("reviews", filter=Q(reviews__is_approved=True)),
+    )
     query = request.GET.get("q", "")
     category = request.GET.get("category", "")
     level = request.GET.get("level", "")
     price = request.GET.get("price", "")
+    rating = request.GET.get("rating", "")
     if query:
         courses = courses.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if category:
@@ -28,6 +32,14 @@ def course_list(request):
         courses = courses.filter(is_free=True)
     elif price == "paid":
         courses = courses.filter(is_free=False)
+    if rating:
+        try:
+            minimum_rating = max(1, min(5, int(rating)))
+        except ValueError:
+            minimum_rating = 0
+        if minimum_rating:
+            courses = courses.filter(rating_average__gte=minimum_rating)
+    courses = courses.order_by("-featured", "-created_at")
     paginator = Paginator(courses, 9)
     page = paginator.get_page(request.GET.get("page"))
     return render(
@@ -41,6 +53,7 @@ def course_list(request):
             "selected_category": category,
             "selected_level": level,
             "selected_price": price,
+            "selected_rating": rating,
         },
     )
 
@@ -54,10 +67,26 @@ def course_detail(request, slug):
             return redirect("courses:list")
     enrollment = None
     is_wishlisted = False
+    progress = None
+    completed_lesson_ids = set()
+    next_lesson = None
+    user_review = None
     if request.user.is_authenticated:
         enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
         is_wishlisted = WishlistItem.objects.filter(user=request.user, course=course).exists()
-    review_form = ReviewForm()
+        user_review = course.reviews.filter(user=request.user).first()
+        if enrollment:
+            progress, _ = CourseProgress.objects.get_or_create(enrollment=enrollment)
+            progress.recalculate()
+            completed_lesson_ids = set(enrollment.lesson_progress.filter(completed=True).values_list("lesson_id", flat=True))
+            next_lesson = (
+                Lesson.objects.filter(module__course=course)
+                .exclude(id__in=completed_lesson_ids)
+                .order_by("module__order", "order")
+                .first()
+            )
+    approved_reviews = course.reviews.select_related("user").filter(is_approved=True)
+    review_form = ReviewForm(instance=user_review)
     return render(
         request,
         "courses/course_detail.html",
@@ -66,6 +95,11 @@ def course_detail(request, slug):
             "enrollment": enrollment,
             "is_wishlisted": is_wishlisted,
             "review_form": review_form,
+            "approved_reviews": approved_reviews,
+            "progress": progress,
+            "completed_lesson_ids": completed_lesson_ids,
+            "next_lesson": next_lesson,
+            "can_review": bool(enrollment and request.user != course.instructor),
         },
     )
 
@@ -254,8 +288,39 @@ def delete_lesson_block(request, slug, lesson_id, block_id):
 
 
 @login_required
-def submit_review(request, slug):
+@require_POST
+def move_lesson_block(request, slug, lesson_id, block_id, direction):
     course = get_object_or_404(Course, slug=slug)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    block = get_object_or_404(LessonContentBlock, pk=block_id, lesson=lesson)
+    if course.instructor != request.user and not request.user.is_platform_admin:
+        messages.error(request, "You cannot reorder this content block.")
+        return redirect("courses:detail", slug=slug)
+    ordered_blocks = list(lesson.content_blocks.order_by("order", "created_at"))
+    index = ordered_blocks.index(block)
+    swap_with = None
+    if direction == "up" and index > 0:
+        swap_with = ordered_blocks[index - 1]
+    elif direction == "down" and index + 1 < len(ordered_blocks):
+        swap_with = ordered_blocks[index + 1]
+    if swap_with:
+        block.order, swap_with.order = swap_with.order, block.order
+        block.save(update_fields=["order", "updated_at"])
+        swap_with.save(update_fields=["order", "updated_at"])
+        messages.success(request, "Content block order updated.")
+    return redirect("courses:manage_lesson_blocks", slug=slug, lesson_id=lesson.id)
+
+
+@login_required
+@require_POST
+def submit_review(request, slug):
+    course = get_object_or_404(Course, slug=slug, status=Course.Status.PUBLISHED)
+    if course.instructor == request.user:
+        messages.error(request, "Instructors cannot review their own courses.")
+        return redirect("courses:detail", slug=slug)
+    if not Enrollment.objects.filter(student=request.user, course=course).exists():
+        messages.error(request, "Enroll in the course before leaving a review.")
+        return redirect("courses:detail", slug=slug)
     if request.method == "POST":
         form = ReviewForm(request.POST)
         if form.is_valid():
@@ -299,7 +364,36 @@ def lesson_detail(request, slug, lesson_id):
         messages.error(request, "Enroll before viewing this lesson.")
         return redirect("courses:detail", slug=slug)
     note = LessonNote.objects.filter(user=request.user, lesson=lesson).first()
-    return render(request, "courses/lesson_detail.html", {"course": course, "lesson": lesson, "enrollment": enrollment, "note": note})
+    lesson_progress = None
+    progress = None
+    next_lesson = None
+    previous_lesson = None
+    if enrollment:
+        enrollment.last_accessed_at = timezone.now()
+        enrollment.save(update_fields=["last_accessed_at"])
+        lesson_progress, _ = LessonProgress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
+        progress, _ = CourseProgress.objects.get_or_create(enrollment=enrollment)
+        progress.recalculate()
+    ordered_lessons = list(Lesson.objects.filter(module__course=course).order_by("module__order", "order").only("id", "title", "module_id"))
+    lesson_ids = [item.id for item in ordered_lessons]
+    if lesson.id in lesson_ids:
+        index = lesson_ids.index(lesson.id)
+        previous_lesson = ordered_lessons[index - 1] if index > 0 else None
+        next_lesson = ordered_lessons[index + 1] if index + 1 < len(ordered_lessons) else None
+    return render(
+        request,
+        "courses/lesson_detail.html",
+        {
+            "course": course,
+            "lesson": lesson,
+            "enrollment": enrollment,
+            "note": note,
+            "lesson_progress": lesson_progress,
+            "progress": progress,
+            "previous_lesson": previous_lesson,
+            "next_lesson": next_lesson,
+        },
+    )
 
 
 @login_required

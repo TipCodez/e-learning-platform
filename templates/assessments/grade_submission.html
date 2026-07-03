@@ -1,4 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Grade Submission</h1><p class="text-muted">{{ submission.assignment.title }} &middot; {{ submission.student.email }}</p><div class="dashboard-card mb-3"><p>{{ submission.response_text|linebreaks }}</p>{% if submission.file %}<a href="{{ submission.file.url }}">Download submitted file</a>{% endif %}</div><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save Grade</button></form></div></section>
+<section class="auth-section">
+  <div class="auth-card wide">
+    <h1 class="h2 text-slate">Grade Submission</h1>
+    <p class="text-muted">{{ submission.assignment.title }} &middot; {{ submission.student.email }}</p>
+    <div class="row g-3 mb-3">
+      <div class="col-md-4"><div class="dashboard-card"><span>Max score</span><strong>{{ submission.assignment.max_score }}</strong></div></div>
+      <div class="col-md-4"><div class="dashboard-card"><span>Status</span><strong>{% if submission.score != None %}Graded{% else %}Pending{% endif %}</strong></div></div>
+      <div class="col-md-4"><div class="dashboard-card"><span>Submitted</span><strong>{{ submission.submitted_at|date:"M d" }}</strong></div></div>
+    </div>
+    <div class="dashboard-card mb-3">
+      <h2 class="h5 text-slate">Learner response</h2>
+      <p>{{ submission.response_text|linebreaks }}</p>
+      {% if submission.file %}<a href="{{ submission.file.url }}">Download submitted file</a>{% endif %}
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn btn-primary">Save Grade</button>
+    </form>
+  </div>
+</section>
 {% endblock %}

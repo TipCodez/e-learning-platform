@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from core.forms import SupportTicketForm
 from core.models import BlogPost, FAQ
+from courses.models import Course
 
 
 def home(request):
@@ -124,3 +126,19 @@ def privacy(request):
 
 def ai_assistant(request):
     return render(request, "core/ai_assistant.html")
+
+
+def search(request):
+    query = request.GET.get("q", "").strip()
+    courses = Course.objects.none()
+    posts = BlogPost.objects.none()
+    faqs = FAQ.objects.none()
+    if query:
+        courses = Course.objects.filter(status=Course.Status.PUBLISHED).filter(
+            Q(title__icontains=query) | Q(subtitle__icontains=query) | Q(description__icontains=query)
+        )[:8]
+        posts = BlogPost.objects.filter(is_published=True).filter(
+            Q(title__icontains=query) | Q(excerpt__icontains=query) | Q(content__icontains=query)
+        )[:8]
+        faqs = FAQ.objects.filter(is_active=True).filter(Q(question__icontains=query) | Q(answer__icontains=query))[:8]
+    return render(request, "core/search.html", {"query": query, "courses": courses, "posts": posts, "faqs": faqs})

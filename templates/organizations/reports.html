@@ -1,4 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="section-pad"><div class="container"><div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3"><h1 class="h2 text-slate">Organization Reports</h1><div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{% url 'organizations:export_report' %}">Export CSV</a><form method="post" action="{% url 'organizations:generate_report' %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Generate Report</button></form></div></div><div class="row g-3 my-4"><div class="col-md-4"><div class="dashboard-card"><span>Learners</span><strong>{{ summary.learners }}</strong></div></div><div class="col-md-4"><div class="dashboard-card"><span>Enrollments</span><strong>{{ summary.enrollments }}</strong></div></div><div class="col-md-4"><div class="dashboard-card"><span>Average progress</span><strong>{{ summary.average_progress }}%</strong></div></div></div>{% for report in reports %}<div class="dashboard-card mb-2"><strong>{{ report.title }}</strong><pre class="mb-0">{{ report.summary }}</pre><span>{{ report.generated_at }}</span></div>{% empty %}<div class="empty-state">No generated reports yet.</div>{% endfor %}</div></section>
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-3">
+      <h1 class="h2 text-slate">Organization Reports</h1>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'organizations:export_report' %}">Export CSV</a>
+        <form method="post" action="{% url 'organizations:generate_report' %}">
+          {% csrf_token %}
+          <button class="btn btn-primary" type="submit">Generate Report</button>
+        </form>
+      </div>
+    </div>
+    <div class="row g-3 my-4">
+      <div class="col-md-3"><div class="dashboard-card"><span>Learners</span><strong>{{ summary.learners }}</strong></div></div>
+      <div class="col-md-3"><div class="dashboard-card"><span>Active</span><strong>{{ summary.active_learners }}</strong></div></div>
+      <div class="col-md-3"><div class="dashboard-card"><span>Enrollments</span><strong>{{ summary.enrollments }}</strong></div></div>
+      <div class="col-md-3"><div class="dashboard-card"><span>Average progress</span><strong>{{ summary.average_progress }}%</strong></div></div>
+    </div>
+    <h2 class="h5 text-slate">Course breakdown</h2>
+    {% for row in course_rows %}
+      <div class="dashboard-card mb-2">
+        <strong>{{ row.course }}</strong>
+        <span>{{ row.learners }} learners &middot; {{ row.completed }} completed &middot; {{ row.average_progress }}% average progress</span>
+      </div>
+    {% empty %}
+      <div class="empty-state">No course enrollment data yet.</div>
+    {% endfor %}
+    <h2 class="h5 text-slate mt-4">Generated snapshots</h2>
+    {% for report in reports %}
+      <div class="dashboard-card mb-2">
+        <strong>{{ report.title }}</strong>
+        <pre class="mb-0">{{ report.summary }}</pre>
+        <span>{{ report.generated_at }}</span>
+      </div>
+    {% empty %}
+      <div class="empty-state">No generated reports yet.</div>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}
