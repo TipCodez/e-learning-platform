@@ -1,4 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.querySelector("[data-theme-toggle]");
+  const themeIcon = document.querySelector("[data-theme-icon]");
+  const applyTheme = (theme) => {
+    const isLight = theme === "light";
+    document.body.classList.toggle("acadeval-light", isLight);
+    document.body.classList.toggle("acadeval-dark", !isLight);
+    if (themeToggle) {
+      themeToggle.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
+      themeToggle.setAttribute("title", isLight ? "Switch to dark mode" : "Switch to light mode");
+    }
+    if (themeIcon) themeIcon.textContent = isLight ? "☀" : "☾";
+  };
+  applyTheme(localStorage.getItem("acadeval-theme") || "dark");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.body.classList.contains("acadeval-light") ? "dark" : "light";
+      localStorage.setItem("acadeval-theme", nextTheme);
+      applyTheme(nextTheme);
+    });
+  }
+
   const alerts = document.querySelectorAll(".toast-stack .alert");
   alerts.forEach((alert) => {
     window.setTimeout(() => {

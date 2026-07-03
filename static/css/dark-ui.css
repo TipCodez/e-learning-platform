@@ -244,3 +244,251 @@ body.acadeval-dark .ai-widget-button {
   background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
   color: #02111f !important;
 }
+
+.theme-toggle {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--lab-border, #d7dde8);
+  background: var(--lab-surface-strong, #ffffff);
+  color: var(--lab-text, #172033);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus {
+  transform: translateY(-1px);
+  border-color: var(--lab-cyan, #0ea5e9);
+  outline: none;
+}
+
+body.acadeval-light {
+  --lab-bg: #f6f8fc;
+  --lab-surface: #ffffff;
+  --lab-surface-strong: #eef3f9;
+  --lab-border: #d8e0ec;
+  --lab-border-soft: rgba(100, 116, 139, .18);
+  --lab-text: #101828;
+  --lab-muted: #5f6c80;
+  --lab-cyan: #0078d4;
+  --lab-green: #00a779;
+  --lab-shadow: 0 18px 45px rgba(15, 23, 42, .10);
+  background: var(--lab-bg) !important;
+  color: var(--lab-text) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body.acadeval-light main,
+body.acadeval-light .hero-section,
+body.acadeval-light .page-hero,
+body.acadeval-light .bg-soft,
+body.acadeval-light .auth-section,
+body.acadeval-light .dashboard-shell {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 167, 121, .10), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(0, 120, 212, .12), transparent 34%),
+    var(--lab-bg) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .app-navbar,
+body.acadeval-light .site-footer,
+body.acadeval-light .footer-band {
+  background: rgba(255, 255, 255, .94) !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  backdrop-filter: blur(18px);
+}
+
+body.acadeval-light .app-navbar {
+  border-bottom: 1px solid var(--lab-border) !important;
+}
+
+body.acadeval-light .navbar-brand,
+body.acadeval-light .footer-brand,
+body.acadeval-light h1,
+body.acadeval-light h2,
+body.acadeval-light h3,
+body.acadeval-light h4,
+body.acadeval-light h5,
+body.acadeval-light h6,
+body.acadeval-light .display-1,
+body.acadeval-light .display-2,
+body.acadeval-light .display-3,
+body.acadeval-light .display-4,
+body.acadeval-light .display-5,
+body.acadeval-light .display-6,
+body.acadeval-light .text-slate {
+  color: var(--lab-text) !important;
+  letter-spacing: 0 !important;
+}
+
+body.acadeval-light .brand-badge {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  color: #ffffff !important;
+  font-weight: 950;
+  box-shadow: 0 12px 30px rgba(0, 120, 212, .20);
+}
+
+body.acadeval-light .nav-link {
+  color: var(--lab-muted) !important;
+  font-weight: 800;
+}
+
+body.acadeval-light .nav-link:hover,
+body.acadeval-light .nav-link:focus,
+body.acadeval-light .nav-link.active {
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .navbar-toggler {
+  border-color: var(--lab-border) !important;
+  background: var(--lab-surface-strong) !important;
+}
+
+body.acadeval-light .btn-primary,
+body.acadeval-light .btn-accent {
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  font-weight: 900;
+  box-shadow: 0 16px 34px rgba(0, 120, 212, .18);
+}
+
+body.acadeval-light .btn-outline-primary,
+body.acadeval-light .btn-outline-secondary,
+body.acadeval-light .btn-light {
+  background: #ffffff !important;
+  border-color: var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  font-weight: 800;
+}
+
+body.acadeval-light a,
+body.acadeval-light .btn-link {
+  color: var(--lab-cyan);
+}
+
+body.acadeval-light .hero-panel,
+body.acadeval-light .auth-card,
+body.acadeval-light .course-card,
+body.acadeval-light .path-card,
+body.acadeval-light .blog-card,
+body.acadeval-light .pricing-card,
+body.acadeval-light .dashboard-card,
+body.acadeval-light .metric-card,
+body.acadeval-light .empty-state,
+body.acadeval-light .article-body,
+body.acadeval-light .content-card,
+body.acadeval-light .lesson-shell,
+body.acadeval-light .assignment-card,
+body.acadeval-light .quiz-card,
+body.acadeval-light .card,
+body.acadeval-light .list-group-item,
+body.acadeval-light .modal-content,
+body.acadeval-light .dropdown-menu {
+  background: rgba(255, 255, 255, .96) !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  box-shadow: var(--lab-shadow);
+}
+
+body.acadeval-light p,
+body.acadeval-light .text-muted,
+body.acadeval-light .lead,
+body.acadeval-light .small,
+body.acadeval-light small,
+body.acadeval-light .form-text,
+body.acadeval-light .breadcrumb,
+body.acadeval-light .breadcrumb-item,
+body.acadeval-light .footer-link,
+body.acadeval-light .text-white-50 {
+  color: var(--lab-muted) !important;
+}
+
+body.acadeval-light .badge,
+body.acadeval-light .eyebrow,
+body.acadeval-light .section-eyebrow {
+  color: var(--lab-green) !important;
+  background: rgba(0, 167, 121, .10) !important;
+  border: 1px solid rgba(0, 167, 121, .20) !important;
+  font-weight: 900;
+}
+
+body.acadeval-light .form-control,
+body.acadeval-light .form-select,
+body.acadeval-light textarea,
+body.acadeval-light input[type="text"],
+body.acadeval-light input[type="email"],
+body.acadeval-light input[type="password"],
+body.acadeval-light input[type="number"],
+body.acadeval-light input[type="url"] {
+  background: #ffffff !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .form-control:focus,
+body.acadeval-light .form-select:focus {
+  border-color: var(--lab-cyan) !important;
+  box-shadow: 0 0 0 .2rem rgba(0, 120, 212, .14) !important;
+}
+
+body.acadeval-light .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--lab-text);
+  --bs-table-border-color: var(--lab-border);
+  color: var(--lab-text) !important;
+}
+
+body.acadeval-light .table thead th {
+  color: var(--lab-green) !important;
+  background: rgba(0, 167, 121, .08) !important;
+}
+
+body.acadeval-light pre,
+body.acadeval-light code,
+body.acadeval-light .rich-code-block {
+  background: #f3f7fb !important;
+  color: #162033 !important;
+  border-color: var(--lab-border) !important;
+}
+
+body.acadeval-light .rich-output-block {
+  background: #f0fffa !important;
+  border-color: rgba(0, 167, 121, .24) !important;
+}
+
+body.acadeval-light .progress {
+  background: #e5ebf3 !important;
+}
+
+body.acadeval-light .progress-bar {
+  background: linear-gradient(90deg, var(--lab-cyan), var(--lab-green)) !important;
+}
+
+body.acadeval-light .toast-stack .alert,
+body.acadeval-light .ai-widget-panel,
+body.acadeval-light .ai-widget-button {
+  background: #ffffff !important;
+  border: 1px solid var(--lab-border) !important;
+  color: var(--lab-text) !important;
+  box-shadow: var(--lab-shadow);
+}
+
+body.acadeval-light .ai-widget-button {
+  background: linear-gradient(135deg, var(--lab-cyan), var(--lab-green)) !important;
+  color: #ffffff !important;
+}
