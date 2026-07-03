@@ -19,6 +19,12 @@
     <article class="article-body">
       {% if lesson.content_blocks.all %}
         {% for block in lesson.content_blocks.all %}
+          {% if block.image and block.block_type != "screenshot" %}
+            <figure class="screenshot-block">
+              <img src="{{ block.image.url }}" alt="{{ block.image_alt|default:block.title|default:'Content image' }}">
+              {% if block.title or block.subtitle %}<figcaption>{{ block.title }}{% if block.subtitle %} - {{ block.subtitle }}{% endif %}</figcaption>{% endif %}
+            </figure>
+          {% endif %}
           {% if block.block_type == "subtitle" %}
             <h2 class="article-subtitle">{{ block.title|default:block.body }}</h2>
             {% if block.subtitle %}<p class="text-muted">{{ block.subtitle }}</p>{% endif %}

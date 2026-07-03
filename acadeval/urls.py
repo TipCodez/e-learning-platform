@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from acadeval.views import public_media
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -19,6 +20,7 @@ urlpatterns = [
     path("notifications/", include("notifications.urls")),
     path("organizations/", include("organizations.urls")),
     path("career/", include("career.urls")),
+    path("media/<path:path>", public_media, name="public_media"),
     path("", include("core.urls")),
 ]
 

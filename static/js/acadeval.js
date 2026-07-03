@@ -86,6 +86,7 @@ const tableHtmlFromPipeRows = (value) => {
 const renderBuilderPreview = (form) => {
   const preview = form.querySelector("[data-live-preview]");
   if (!preview) return;
+  const selectedImage = form.querySelector("[data-image-preview] img")?.outerHTML || "";
   const getField = (name) => form.querySelector(`[data-builder-field="${name}"]`)?.value || "";
   const type = getField("type") || "paragraph";
   const title = getField("title");
@@ -95,9 +96,9 @@ const renderBuilderPreview = (form) => {
   const titleHtml = title ? `<h2 class="h4 text-slate">${escapeHtml(title)}</h2>` : "";
   const subtitleHtml = subtitle ? `<p class="lead">${escapeHtml(subtitle)}</p>` : "";
   if (type === "subtitle") {
-    preview.innerHTML = `<h2 class="article-subtitle">${escapeHtml(title || body || "Subtitle")}</h2>${subtitleHtml}`;
+    preview.innerHTML = `${selectedImage}<h2 class="article-subtitle">${escapeHtml(title || body || "Subtitle")}</h2>${subtitleHtml}`;
   } else if (type === "section") {
-    preview.innerHTML = `<section class="article-section">${titleHtml}${subtitleHtml}${linesToParagraphs(body || "Section body preview.")}</section>`;
+    preview.innerHTML = `${selectedImage}<section class="article-section">${titleHtml}${subtitleHtml}${linesToParagraphs(body || "Section body preview.")}</section>`;
   } else if (type === "code") {
     preview.innerHTML = `<div class="code-block"><pre><code>${escapeHtml(body || "print('Preview')")}</code></pre></div>`;
   } else if (type === "output") {
@@ -105,15 +106,15 @@ const renderBuilderPreview = (form) => {
   } else if (type === "table") {
     preview.innerHTML = tableHtmlFromPipeRows(table || "Column A|Column B\nValue A|Value B");
   } else if (type === "tile") {
-    preview.innerHTML = `<div class="article-tile">${title ? `<strong>${escapeHtml(title)}</strong>` : ""}${subtitle ? `<span>${escapeHtml(subtitle)}</span>` : ""}${linesToParagraphs(body || "Tile preview.")}</div>`;
+    preview.innerHTML = `${selectedImage}<div class="article-tile">${title ? `<strong>${escapeHtml(title)}</strong>` : ""}${subtitle ? `<span>${escapeHtml(subtitle)}</span>` : ""}${linesToParagraphs(body || "Tile preview.")}</div>`;
   } else if (type === "quote") {
     preview.innerHTML = `<blockquote class="article-quote">${linesToParagraphs(body || "Quote preview.")}${title ? `<cite>${escapeHtml(title)}</cite>` : ""}</blockquote>`;
   } else if (type === "callout") {
     preview.innerHTML = `<div class="article-callout">${title ? `<strong>${escapeHtml(title)}</strong>` : ""}${linesToParagraphs(body || "Callout preview.")}</div>`;
   } else if (type === "screenshot") {
-    preview.innerHTML = `<figure class="screenshot-block"><figcaption>${escapeHtml(title || "Screenshot caption")}</figcaption></figure>`;
+    preview.innerHTML = `<figure class="screenshot-block">${selectedImage}<figcaption>${escapeHtml(title || "Screenshot caption")}</figcaption></figure>`;
   } else {
-    preview.innerHTML = `<div class="article-paragraph">${titleHtml}${linesToParagraphs(body || "Paragraph preview.")}</div>`;
+    preview.innerHTML = `${selectedImage}<div class="article-paragraph">${titleHtml}${linesToParagraphs(body || "Paragraph preview.")}</div>`;
   }
 };
 
@@ -147,6 +148,7 @@ document.querySelectorAll("[data-builder-form]").forEach((form) => {
     }
     const url = URL.createObjectURL(file);
     imagePreview.innerHTML = `<img src="${url}" alt="Selected image preview">`;
+    renderBuilderPreview(form);
   });
 });
 

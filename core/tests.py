@@ -1,4 +1,7 @@
-from django.test import TestCase
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import CustomUser
@@ -21,3 +24,21 @@ class SearchTests(TestCase):
         self.assertContains(response, "Python Basics")
         self.assertContains(response, "Python study guide")
         self.assertContains(response, "How do I learn Python?")
+
+
+class PublicMediaTests(TestCase):
+    def test_public_media_serves_only_allowed_prefixes(self):
+        with TemporaryDirectory() as temp_dir:
+            media_root = Path(temp_dir)
+            public_file = media_root / "blog-blocks" / "image.txt"
+            private_file = media_root / "assignment-submissions" / "secret.txt"
+            public_file.parent.mkdir(parents=True)
+            private_file.parent.mkdir(parents=True)
+            public_file.write_text("public", encoding="utf-8")
+            private_file.write_text("private", encoding="utf-8")
+            with override_settings(MEDIA_ROOT=media_root):
+                public_response = self.client.get("/media/blog-blocks/image.txt")
+                private_response = self.client.get("/media/assignment-submissions/secret.txt")
+                public_response.close()
+        self.assertEqual(public_response.status_code, 200)
+        self.assertEqual(private_response.status_code, 404)
