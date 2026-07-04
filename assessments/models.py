@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from acadeval.validators import validate_document_upload
+
 
 class Quiz(models.Model):
     course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="quizzes")
@@ -82,7 +84,7 @@ class Assignment(models.Model):
 class AssignmentSubmission(models.Model):
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions")
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="assignment_submissions")
-    file = models.FileField(upload_to="assignment-submissions/", blank=True, null=True)
+    file = models.FileField(upload_to="assignment-submissions/", blank=True, null=True, validators=[validate_document_upload])
     response_text = models.TextField(blank=True)
     score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     feedback = models.TextField(blank=True)
@@ -92,3 +94,4 @@ class AssignmentSubmission(models.Model):
 
     class Meta:
         unique_together = ("assignment", "student")
+

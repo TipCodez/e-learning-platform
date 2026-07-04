@@ -116,6 +116,8 @@ PUBLIC_MEDIA_PREFIXES = (
     "course-thumbnails/",
     "certificate-qr/",
 )
+MAX_IMAGE_UPLOAD_SIZE = config("MAX_IMAGE_UPLOAD_SIZE", default=5 * 1024 * 1024, cast=int)
+MAX_DOCUMENT_UPLOAD_SIZE = config("MAX_DOCUMENT_UPLOAD_SIZE", default=20 * 1024 * 1024, cast=int)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -149,4 +151,5 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
 

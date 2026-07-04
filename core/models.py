@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
+from acadeval.validators import validate_image_upload
+
 
 class AIAssistantSession(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ai_assistant_sessions")
@@ -71,7 +73,7 @@ class BlogContentBlock(models.Model):
     subtitle = models.CharField(max_length=220, blank=True)
     body = models.TextField(blank=True)
     code_language = models.CharField(max_length=40, blank=True)
-    image = models.ImageField(upload_to="blog-blocks/", blank=True, null=True)
+    image = models.ImageField(upload_to="blog-blocks/", blank=True, null=True, validators=[validate_image_upload])
     image_alt = models.CharField(max_length=180, blank=True)
     table_data = models.TextField(
         blank=True,
@@ -138,3 +140,4 @@ class SupportTicket(models.Model):
 
     def __str__(self):
         return self.subject
+

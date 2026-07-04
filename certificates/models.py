@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
+from acadeval.validators import validate_image_upload, validate_pdf_upload
+
 
 class Certificate(models.Model):
     certificate_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -11,8 +13,8 @@ class Certificate(models.Model):
     course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="certificates")
     instructor_name = models.CharField(max_length=180)
     issue_date = models.DateField(auto_now_add=True)
-    pdf_file = models.FileField(upload_to="certificates/", blank=True, null=True)
-    qr_code = models.ImageField(upload_to="certificate-qr/", blank=True, null=True)
+    pdf_file = models.FileField(upload_to="certificates/", blank=True, null=True, validators=[validate_pdf_upload])
+    qr_code = models.ImageField(upload_to="certificate-qr/", blank=True, null=True, validators=[validate_image_upload])
     is_revoked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,3 +37,4 @@ class CertificateTemplate(models.Model):
 
     def __str__(self):
         return self.name
+

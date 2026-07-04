@@ -3,6 +3,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 
+from acadeval.validators import validate_document_upload, validate_image_upload
+
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -77,7 +79,7 @@ class Course(TimeStampedModel):
     target_audience = models.TextField(blank=True)
     level = models.CharField(max_length=20, choices=Level.choices, default=Level.BEGINNER)
     duration = models.CharField(max_length=80, blank=True)
-    thumbnail = models.ImageField(upload_to="course-thumbnails/", blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="course-thumbnails/", blank=True, null=True, validators=[validate_image_upload])
     intro_video_url = models.URLField(blank=True)
     is_free = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -151,7 +153,7 @@ class Lesson(TimeStampedModel):
     content = models.TextField(blank=True)
     video_url = models.URLField(blank=True)
     external_url = models.URLField(blank=True)
-    file = models.FileField(upload_to="lesson-files/", blank=True, null=True)
+    file = models.FileField(upload_to="lesson-files/", blank=True, null=True, validators=[validate_document_upload])
     order = models.PositiveIntegerField(default=1)
     duration_minutes = models.PositiveIntegerField(default=0)
     is_preview = models.BooleanField(default=False)
@@ -190,7 +192,7 @@ class LessonContentBlock(TimeStampedModel):
     subtitle = models.CharField(max_length=220, blank=True)
     body = models.TextField(blank=True)
     code_language = models.CharField(max_length=40, blank=True)
-    image = models.ImageField(upload_to="lesson-blocks/", blank=True, null=True)
+    image = models.ImageField(upload_to="lesson-blocks/", blank=True, null=True, validators=[validate_image_upload])
     image_alt = models.CharField(max_length=180, blank=True)
     table_data = models.TextField(
         blank=True,
@@ -215,7 +217,7 @@ class LessonContentBlock(TimeStampedModel):
 class LessonResource(TimeStampedModel):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="resources")
     title = models.CharField(max_length=160)
-    file = models.FileField(upload_to="lesson-resources/", blank=True, null=True)
+    file = models.FileField(upload_to="lesson-resources/", blank=True, null=True, validators=[validate_document_upload])
     external_url = models.URLField(blank=True)
     is_downloadable = models.BooleanField(default=True)
 
@@ -262,3 +264,4 @@ class LessonNote(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user} note for {self.lesson}"
+

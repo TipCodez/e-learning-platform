@@ -3,6 +3,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 
+from acadeval.validators import validate_image_upload
+
 
 class CustomUserManager(UserManager):
     def _unique_username(self, email):
@@ -54,7 +56,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=30, blank=True)
     country = models.CharField(max_length=80, blank=True)
     bio = models.TextField(blank=True)
-    profile_picture = models.ImageField(upload_to="profiles/", blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profiles/", blank=True, null=True, validators=[validate_image_upload])
     email_verified = models.BooleanField(default=False)
     terms_accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -137,3 +139,4 @@ class OrganizationProfile(models.Model):
 
     def __str__(self):
         return self.organization_name
+
