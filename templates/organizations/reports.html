@@ -8,7 +8,7 @@
         <p class="text-muted mb-0">Monitor learner progress, completed lessons, quiz scores, assignment grades, and course performance.</p>
       </div>
       <div class="d-flex gap-2 align-items-start">
-        <a class="btn btn-outline-primary" href="{% url 'organizations:export_report' %}">Export CSV</a>
+        <a class="btn btn-outline-primary" href="{% url 'organizations:export_report' %}?q={{ filters.q|urlencode }}&status={{ filters.status|urlencode }}">Export CSV</a>
         <form method="post" action="{% url 'organizations:generate_report' %}">
           {% csrf_token %}
           <button class="btn btn-primary" type="submit">Generate Snapshot</button>
@@ -16,6 +16,26 @@
       </div>
     </div>
 
+    <form class="dashboard-panel org-report-filters mb-4" method="get">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-7">
+          <label class="form-label" for="org-report-q">Search</label>
+          <input id="org-report-q" class="form-control" type="search" name="q" value="{{ filters.q }}" placeholder="Search by learner name, email, or course">
+        </div>
+        <div class="col-lg-3">
+          <label class="form-label" for="org-report-status">Completion</label>
+          <select id="org-report-status" class="form-select" name="status">
+            <option value="" {% if not filters.status %}selected{% endif %}>All learners</option>
+            <option value="completed" {% if filters.status == "completed" %}selected{% endif %}>Completed</option>
+            <option value="not_completed" {% if filters.status == "not_completed" %}selected{% endif %}>Not completed</option>
+          </select>
+        </div>
+        <div class="col-lg-2 d-flex gap-2">
+          <button class="btn btn-primary w-100" type="submit">Filter</button>
+          <a class="btn btn-outline-primary" href="{% url 'organizations:reports' %}">Reset</a>
+        </div>
+      </div>
+    </form>
     <div class="row g-3 my-4">
       <div class="col-md-3"><div class="dashboard-card"><span>Learners</span><strong>{{ summary.learners }}</strong></div></div>
       <div class="col-md-3"><div class="dashboard-card"><span>Enrollments</span><strong>{{ summary.enrollments }}</strong></div></div>
@@ -51,7 +71,7 @@
           <tbody>
             {% for row in learner_rows %}
               <tr>
-                <td><strong>{{ row.learner.get_full_name|default:row.learner.email }}</strong><span>{{ row.record.department|default:"No department" }}</span></td>
+                <td><strong>{{ row.learner_name }}</strong><span>{{ row.learner.email }} · {{ row.record.department|default:"No department" }}</span></td>
                 <td>{{ row.average_progress }}%<span>{{ row.completed_courses }}/{{ row.enrollments }} courses complete</span></td>
                 <td>{{ row.completed_lessons }} completed</td>
                 <td>{{ row.quiz_average }}% avg<span>{{ row.quiz_pass_rate }}% pass · {{ row.quiz_attempts }} attempts</span></td>
@@ -118,3 +138,4 @@
   </div>
 </section>
 {% endblock %}
+

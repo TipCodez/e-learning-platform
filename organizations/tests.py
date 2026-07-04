@@ -131,3 +131,57 @@ class OrganizationPerformanceReportTests(TestCase):
         self.assertIn("quiz_average", content)
         self.assertIn("assignment_average", content)
         self.assertIn("reports.learner@example.com", content)
+
+    def test_reports_show_learner_name_and_email(self):
+        self.learner.first_name = "Amina"
+        self.learner.last_name = "Mensah"
+        self.learner.save(update_fields=["first_name", "last_name"])
+        self.client.force_login(self.organization)
+        response = self.client.get(reverse("organizations:reports"))
+        self.assertContains(response, "Amina Mensah")
+        self.assertContains(response, "reports.learner@example.com")
+
+    def test_reports_filter_by_name_email_course_and_completion(self):
+        self.learner.first_name = "Amina"
+        self.learner.last_name = "Mensah"
+        self.learner.save(update_fields=["first_name", "last_name"])
+        incomplete = CustomUser.objects.create_user(email="incomplete.learner@example.com", password="Password12345")
+        OrganizationLearner.objects.create(organization=self.organization, learner=incomplete, department="Security")
+        incomplete_enrollment = Enrollment.objects.create(student=incomplete, course=self.course)
+        CourseProgress.objects.create(enrollment=incomplete_enrollment, percentage=25, completed_lessons=0, total_lessons=2)
+        Enrollment.objects.filter(student=self.learner, course=self.course).update(status=Enrollment.Status.COMPLETED)
+
+        self.client.force_login(self.organization)
+        by_name = self.client.get(reverse("organizations:reports"), {"q": "Amina"})
+        self.assertContains(by_name, "Amina Mensah")
+        self.assertNotContains(by_name, "incomplete.learner@example.com")
+
+        by_email = self.client.get(reverse("organizations:reports"), {"q": "incomplete.learner@example.com"})
+        self.assertContains(by_email, "incomplete.learner@example.com")
+        self.assertNotContains(by_email, "Amina Mensah")
+
+        by_course = self.client.get(reverse("organizations:reports"), {"q": "Canvas Style"})
+        self.assertContains(by_course, "Amina Mensah")
+        self.assertContains(by_course, "incomplete.learner@example.com")
+
+        completed = self.client.get(reverse("organizations:reports"), {"status": "completed"})
+        self.assertContains(completed, "Amina Mensah")
+        self.assertNotContains(completed, "incomplete.learner@example.com")
+
+        not_completed = self.client.get(reverse("organizations:reports"), {"status": "not_completed"})
+        self.assertContains(not_completed, "incomplete.learner@example.com")
+        self.assertNotContains(not_completed, "Amina Mensah")
+
+    def test_export_respects_filters_and_includes_name_and_email(self):
+        self.learner.first_name = "Amina"
+        self.learner.last_name = "Mensah"
+        self.learner.save(update_fields=["first_name", "last_name"])
+        other = CustomUser.objects.create_user(email="csv.other@example.com", password="Password12345")
+        OrganizationLearner.objects.create(organization=self.organization, learner=other)
+        self.client.force_login(self.organization)
+        response = self.client.get(reverse("organizations:export_report"), {"q": "Amina"})
+        content = response.content.decode()
+        self.assertIn("name,email", content)
+        self.assertIn("Amina Mensah", content)
+        self.assertIn("reports.learner@example.com", content)
+        self.assertNotIn("csv.other@example.com", content)

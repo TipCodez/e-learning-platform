@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from django.db.models import Avg, Count, Max
+from django.db.models import Avg, Count, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
@@ -43,8 +43,28 @@ def _learner_ids(user):
     return list(_organization_records(user).values_list("learner_id", flat=True))
 
 
-def _learner_performance_rows(user):
-    records = list(_organization_records(user))
+def _report_filters(request):
+    return {
+        "q": request.GET.get("q", "").strip(),
+        "status": request.GET.get("status", "").strip(),
+    }
+
+
+def _filtered_records(user, filters):
+    records = _organization_records(user)
+    query = filters.get("q", "")
+    if query:
+        records = records.filter(
+            Q(learner__first_name__icontains=query)
+            | Q(learner__last_name__icontains=query)
+            | Q(learner__email__icontains=query)
+            | Q(learner__enrollments__course__title__icontains=query)
+        ).distinct()
+    return records
+
+def _learner_performance_rows(user, filters=None):
+    filters = filters or {}
+    records = list(_filtered_records(user, filters))
     learner_ids = [record.learner_id for record in records]
     enrollments = Enrollment.objects.select_related("course", "progress").filter(student_id__in=learner_ids)
     progress_by_student = {}
@@ -89,9 +109,11 @@ def _learner_performance_rows(user):
         average_progress = round(progress["progress_total"] / enrollments_count, 1) if enrollments_count else 0
         quiz_attempts = quiz.get("attempts", 0) or 0
         quiz_passed = quiz.get("passed", 0) or 0
+        learner_name = record.learner.get_full_name() or record.learner.email
         rows.append(
             {
                 "record": record,
+                "learner_name": learner_name,
                 "learner": record.learner,
                 "enrollments": enrollments_count,
                 "completed_courses": progress["completed_courses"],
@@ -106,12 +128,26 @@ def _learner_performance_rows(user):
                 "last_activity": assignment.get("last_submitted") or progress["last_accessed_at"],
             }
         )
+    status = filters.get("status", "")
+    if status == "completed":
+        rows = [row for row in rows if row["enrollments"] and row["completed_courses"] == row["enrollments"]]
+    elif status == "not_completed":
+        rows = [row for row in rows if row["enrollments"] == 0 or row["completed_courses"] < row["enrollments"]]
     return rows
 
 
-def _course_performance_rows(learner_ids):
+def _course_performance_rows(learner_ids, filters=None):
+    filters = filters or {}
     rows = []
     enrollments = Enrollment.objects.select_related("course", "progress").filter(student_id__in=learner_ids)
+    query = filters.get("q", "")
+    if query:
+        enrollments = enrollments.filter(
+            Q(course__title__icontains=query)
+            | Q(student__first_name__icontains=query)
+            | Q(student__last_name__icontains=query)
+            | Q(student__email__icontains=query)
+        ).distinct()
     for course in Course.objects.filter(enrollments__in=enrollments).distinct().order_by("title"):
         course_enrollments = [item for item in enrollments if item.course_id == course.id]
         enrollment_ids = [item.id for item in course_enrollments]
@@ -128,11 +164,17 @@ def _course_performance_rows(learner_ids):
             average=Avg("score"),
         )
         lessons_completed = LessonProgress.objects.filter(enrollment_id__in=enrollment_ids, completed=True).count()
+        completed = sum(1 for item in course_enrollments if item.status == Enrollment.Status.COMPLETED)
+        status = filters.get("status", "")
+        if status == "completed" and completed < len(course_enrollments):
+            continue
+        if status == "not_completed" and completed == len(course_enrollments):
+            continue
         rows.append(
             {
                 "course": course,
                 "learners": len(course_enrollments),
-                "completed": sum(1 for item in course_enrollments if item.status == Enrollment.Status.COMPLETED),
+                "completed": completed,
                 "average_progress": round(sum(progress_values) / len(progress_values), 1) if progress_values else 0,
                 "lessons_completed": lessons_completed,
                 "quiz_attempts": quiz["attempts"] or 0,
@@ -258,16 +300,17 @@ def reports(request):
     if not _require_org(request.user):
         messages.error(request, "Organization access required.")
         return redirect("dashboards:home")
-    records = _organization_records(request.user)
-    learner_ids = _learner_ids(request.user)
-    learner_rows = _learner_performance_rows(request.user)
-    course_rows = _course_performance_rows(learner_ids)
+    filters = _report_filters(request)
+    records = _filtered_records(request.user, filters)
+    learner_rows = _learner_performance_rows(request.user, filters)
+    learner_ids = [row["learner"].id for row in learner_rows]
+    course_rows = _course_performance_rows(learner_ids, filters)
     enrollments = Enrollment.objects.filter(student_id__in=learner_ids)
     quiz_attempts = QuizAttempt.objects.filter(student_id__in=learner_ids)
     assignment_submissions = AssignmentSubmission.objects.filter(student_id__in=learner_ids)
     summary = {
-        "learners": records.count(),
-        "active_learners": records.filter(active=True).count(),
+        "learners": len(learner_rows),
+        "active_learners": sum(1 for row in learner_rows if row["record"].active),
         "departments": records.exclude(department="").values("department").distinct().count(),
         "enrollments": enrollments.count(),
         "completed": enrollments.filter(status=Enrollment.Status.COMPLETED).count(),
@@ -282,7 +325,7 @@ def reports(request):
     return render(
         request,
         "organizations/reports.html",
-        {"summary": summary, "reports": reports_qs, "course_rows": course_rows, "learner_rows": learner_rows},
+        {"summary": summary, "reports": reports_qs, "course_rows": course_rows, "learner_rows": learner_rows, "filters": filters},
     )
 
 
@@ -319,6 +362,7 @@ def export_report(request):
     response["Content-Disposition"] = 'attachment; filename="organization-learner-performance.csv"'
     writer = csv.writer(response)
     writer.writerow([
+        "name",
         "email",
         "department",
         "active",
@@ -334,8 +378,10 @@ def export_report(request):
         "assignment_average",
         "last_activity",
     ])
-    for row in _learner_performance_rows(request.user):
+    filters = _report_filters(request)
+    for row in _learner_performance_rows(request.user, filters):
         writer.writerow([
+            row["learner_name"],
             row["learner"].email,
             row["record"].department,
             row["record"].active,
@@ -352,3 +398,5 @@ def export_report(request):
             row["last_activity"] or "",
         ])
     return response
+
+
