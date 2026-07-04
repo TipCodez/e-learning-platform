@@ -881,3 +881,8 @@ body.acadeval-dark .org-report-table td {
   font-size: .82rem;
   font-weight: 700;
 }
+
+.org-report-filters-inline {
+  border-top: 1px solid var(--acadeval-border, rgba(148, 163, 184, .18));
+  padding-top: 1rem;
+}
