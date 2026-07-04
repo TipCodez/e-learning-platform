@@ -11,5 +11,7 @@ urlpatterns = [
     path("enroll/", views.bulk_enroll, name="bulk_enroll"),
     path("reports/", views.reports, name="reports"),
     path("reports/generate/", views.generate_report, name="generate_report"),
+    path("reports/clear/", views.clear_reports, name="clear_reports"),
     path("reports/export/", views.export_report, name="export_report"),
 ]
+

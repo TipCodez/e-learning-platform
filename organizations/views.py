@@ -354,6 +354,16 @@ def generate_report(request):
 
 
 @login_required
+@require_POST
+def clear_reports(request):
+    if not _require_org(request.user):
+        messages.error(request, "Organization access required.")
+        return redirect("dashboards:home")
+    deleted, _ = OrganizationReport.objects.filter(organization=request.user).delete()
+    label = "snapshot" if deleted == 1 else "snapshots"
+    messages.success(request, f"Cleared {deleted} generated {label}.")
+    return redirect("organizations:reports")
+@login_required
 def export_report(request):
     if not _require_org(request.user):
         messages.error(request, "Organization access required.")
@@ -398,5 +408,7 @@ def export_report(request):
             row["last_activity"] or "",
         ])
     return response
+
+
 
 

@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import CustomUser
-from organizations.models import OrganizationLearner
+from organizations.models import OrganizationLearner, OrganizationReport
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -185,3 +185,35 @@ class OrganizationPerformanceReportTests(TestCase):
         self.assertIn("Amina Mensah", content)
         self.assertIn("reports.learner@example.com", content)
         self.assertNotIn("csv.other@example.com", content)
+
+
+class OrganizationSnapshotClearTests(TestCase):
+    def setUp(self):
+        self.organization = CustomUser.objects.create_user(
+            email="clear.org@example.com",
+            password="Password12345",
+            role=CustomUser.Role.ORGANIZATION,
+        )
+        self.other_organization = CustomUser.objects.create_user(
+            email="clear.other@example.com",
+            password="Password12345",
+            role=CustomUser.Role.ORGANIZATION,
+        )
+
+    def test_clear_snapshots_deletes_only_current_organization_reports(self):
+        OrganizationReport.objects.create(organization=self.organization, title="Report 1", summary="A")
+        OrganizationReport.objects.create(organization=self.organization, title="Report 2", summary="B")
+        OrganizationReport.objects.create(organization=self.other_organization, title="Other", summary="C")
+        self.client.force_login(self.organization)
+
+        response = self.client.post(reverse("organizations:clear_reports"))
+        self.assertRedirects(response, reverse("organizations:reports"))
+        self.assertFalse(OrganizationReport.objects.filter(organization=self.organization).exists())
+        self.assertEqual(OrganizationReport.objects.filter(organization=self.other_organization).count(), 1)
+
+    def test_reports_page_shows_clear_snapshots_button(self):
+        self.client.force_login(self.organization)
+        response = self.client.get(reverse("organizations:reports"))
+        self.assertContains(response, "Clear Snapshots")
+        self.assertContains(response, reverse("organizations:clear_reports"))
+

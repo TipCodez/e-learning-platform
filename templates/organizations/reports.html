@@ -13,6 +13,10 @@
           {% csrf_token %}
           <button class="btn btn-primary" type="submit">Generate Snapshot</button>
         </form>
+        <form method="post" action="{% url 'organizations:clear_reports' %}">
+          {% csrf_token %}
+          <button class="btn btn-outline-danger" type="submit">Clear Snapshots</button>
+        </form>
       </div>
     </div>
 
@@ -141,6 +145,7 @@
   </div>
 </section>
 {% endblock %}
+
 
 
 
