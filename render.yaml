@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: acadeval
+    env: python
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn acadeval.wsgi:application --log-file -"
+    healthCheckPath: "/health/"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.1
+      - key: DEBUG
+        value: "False"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: acadeval-db
+          property: connectionString
+
+databases:
+  - name: acadeval-db
+    databaseName: acadeval
+    user: acadeval
+

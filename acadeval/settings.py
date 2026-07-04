@@ -1,4 +1,4 @@
-﻿"""Django settings for the Acadeval learning platform."""
+"""Django settings for the Acadeval learning platform."""
 from pathlib import Path
 from decouple import Csv, config
 import dj_database_url
@@ -109,7 +109,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(config("MEDIA_ROOT", default=BASE_DIR / "media"))
 PUBLIC_MEDIA_PREFIXES = (
     "blog-blocks/",
     "lesson-blocks/",
@@ -138,6 +138,9 @@ CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_REFERRER_POLICY = "same-origin"
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = bool_config("SECURE_SSL_REDIRECT", default=False)
@@ -146,5 +149,4 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = "same-origin"
+

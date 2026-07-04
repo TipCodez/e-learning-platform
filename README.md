@@ -63,6 +63,28 @@ Open `http://127.0.0.1:8000/`.
 - PostgreSQL connection fails: verify `DATABASE_URL`, database name, username, password, and that PostgreSQL is running.
 - Profile image upload fails: install Pillow and confirm `MEDIA_ROOT` is writable.
 
+## Deployment
+
+This repo includes first-pass production deployment files for Render-compatible hosting:
+
+- `Procfile` starts Gunicorn with `acadeval.wsgi`.
+- `build.sh` installs dependencies, collects static files, and applies migrations.
+- `render.yaml` defines a Python web service, PostgreSQL database, and `/health/` health check.
+
+For production, set these environment variables before deploying:
+
+```bash
+DEBUG=False
+SECRET_KEY=<long-random-secret>
+ALLOWED_HOSTS=<your-domain>,<your-render-host>
+CSRF_TRUSTED_ORIGINS=https://<your-domain>,https://<your-render-host>
+SECURE_SSL_REDIRECT=True
+DATABASE_URL=<postgres-connection-string>
+MEDIA_ROOT=/opt/render/project/src/media
+```
+
+Uploaded media on ephemeral hosts should use a persistent disk or cloud storage. Public media is intentionally limited to approved upload prefixes; private learner submissions remain blocked from direct public URLs.
+
 ## Production Checklist
 
 - Set `DEBUG=False`.
@@ -77,3 +99,4 @@ Open `http://127.0.0.1:8000/`.
 ## Next Phase
 
 Phase 2 should add the `courses` app with categories, subcategories, courses, modules, lessons, resources, publishing workflow, approval status, search, filters, and course detail pages.
+

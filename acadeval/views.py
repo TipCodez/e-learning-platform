@@ -1,8 +1,12 @@
 from pathlib import PurePosixPath
 
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.views.static import serve
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok", "service": "acadeval"})
 
 
 def public_media(request, path):
@@ -13,3 +17,4 @@ def public_media(request, path):
     if not any(normalized.startswith(prefix) for prefix in allowed_prefixes):
         raise Http404("Media not found")
     return serve(request, normalized, document_root=settings.MEDIA_ROOT)
+
