@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-pad">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-4">
+      <div>
+        <h1 class="h2 text-slate">{{ learner.get_full_name|default:learner.email }}</h1>
+        <p class="text-muted mb-0">{{ membership.department|default:"No department" }} · {{ membership.active|yesno:"Active,Inactive" }}</p>
+      </div>
+      <a class="btn btn-outline-primary" href="{% url 'organizations:reports' %}">Back to Reports</a>
+    </div>
+
+    {% for row in course_rows %}
+      <section class="dashboard-panel mb-4">
+        <div class="dashboard-panel-header">
+          <div>
+            <span class="dashboard-eyebrow">Course</span>
+            <h2>{{ row.course.title }}</h2>
+          </div>
+          <span class="dashboard-status">{{ row.enrollment.get_status_display }}</span>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-3"><div class="dashboard-card"><span>Progress</span><strong>{{ row.progress.percentage|default:0 }}%</strong></div></div>
+          <div class="col-md-3"><div class="dashboard-card"><span>Lessons complete</span><strong>{{ row.lessons_completed }}</strong></div></div>
+          <div class="col-md-3"><div class="dashboard-card"><span>Quiz average</span><strong>{{ row.quiz_average }}%</strong></div></div>
+          <div class="col-md-3"><div class="dashboard-card"><span>Assignment average</span><strong>{{ row.assignment_average }}</strong></div></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <h3 class="h6 text-slate">Quiz Attempts</h3>
+            <div class="dashboard-list dashboard-list-compact">
+              {% for attempt in row.quiz_attempts %}
+                <div class="dashboard-link-row">
+                  <strong>{{ attempt.quiz.title }}</strong>
+                  <span>{{ attempt.score }}% · {{ attempt.passed|yesno:"Passed,Not passed" }} · {{ attempt.started_at|date:"M j, Y" }}</span>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0">No quiz attempts yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <h3 class="h6 text-slate">Assignment Grades</h3>
+            <div class="dashboard-list dashboard-list-compact">
+              {% for submission in row.assignment_submissions %}
+                <div class="dashboard-link-row">
+                  <strong>{{ submission.assignment.title }}</strong>
+                  <span>{% if submission.score != None %}{{ submission.score }} / {{ submission.assignment.max_score }}{% else %}Pending grade{% endif %} · {{ submission.submitted_at|date:"M j, Y" }}</span>
+                </div>
+              {% empty %}
+                <p class="text-muted mb-0">No assignment submissions yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% empty %}
+      <div class="empty-state">This learner has not been enrolled in any courses yet.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

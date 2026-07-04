@@ -840,3 +840,38 @@ body.acadeval-dark .dashboard-list-item:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.org-report-table {
+  color: inherit;
+  margin-bottom: 0;
+}
+
+.org-report-table th {
+  border-bottom: 1px solid var(--acadeval-border, rgba(148, 163, 184, .24));
+  color: var(--acadeval-muted, #94a3b8);
+  font-size: .78rem;
+  text-transform: uppercase;
+}
+
+.org-report-table td {
+  border-color: var(--acadeval-border, rgba(148, 163, 184, .18));
+  color: inherit;
+  vertical-align: middle;
+}
+
+.org-report-table td span {
+  color: var(--acadeval-muted, #94a3b8);
+  display: block;
+  font-size: .86rem;
+  margin-top: .15rem;
+}
+
+body.acadeval-light .org-report-table,
+body.acadeval-light .org-report-table td {
+  color: #0f172a;
+}
+
+body.acadeval-dark .org-report-table,
+body.acadeval-dark .org-report-table td {
+  color: #f8fafc;
+}
