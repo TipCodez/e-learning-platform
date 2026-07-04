@@ -1,13 +1,68 @@
 {% extends "dashboards/base_dashboard.html" %}
 {% block title %}Organization Dashboard | Acadeval{% endblock %}
 {% block dashboard_content %}
-<h1 class="h2 text-slate">Organization Dashboard</h1>
-<p class="text-muted">Manage learners, enroll teams, and monitor training outcomes.</p>
+<div class="dashboard-heading">
+  <div>
+    <h1 class="h2 text-slate">Organization Dashboard</h1>
+    <p class="text-muted">Manage learners, enroll teams, and monitor training outcomes.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'organizations:bulk_learners' %}">Bulk Add Learners</a>
+</div>
 {% include "dashboards/partials/metrics.html" %}
-<div class="d-flex flex-wrap gap-2 mb-4">
-  <a class="btn btn-primary" href="{% url 'organizations:learners' %}">Learners</a>
-  <a class="btn btn-outline-primary" href="{% url 'organizations:bulk_learners' %}">Bulk Add</a>
+<div class="dashboard-actions">
+  <a class="btn btn-outline-primary" href="{% url 'organizations:learners' %}">Learners</a>
   <a class="btn btn-outline-primary" href="{% url 'organizations:bulk_enroll' %}">Bulk Enroll</a>
   <a class="btn btn-outline-primary" href="{% url 'organizations:reports' %}">Reports</a>
+</div>
+
+<div class="dashboard-grid">
+  <section class="dashboard-panel dashboard-panel-lg">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Team</span>
+        <h2>Recent Learners</h2>
+      </div>
+      <a href="{% url 'organizations:learners' %}">Manage</a>
+    </div>
+    <div class="dashboard-list">
+      {% for membership in recent_learners %}
+        <article class="dashboard-list-item">
+          <div>
+            <strong>{{ membership.learner.get_full_name|default:membership.learner.email }}</strong>
+            <span>{% if membership.department %}{{ membership.department }} · {% endif %}Added {{ membership.added_at|date:"M j" }}</span>
+          </div>
+          <span class="dashboard-status">Active</span>
+        </article>
+      {% empty %}
+        <p class="text-muted mb-0">Add learners to begin tracking team progress.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Training</span>
+        <h2>Bulk Activity</h2>
+      </div>
+      <a href="{% url 'organizations:reports' %}">Reports</a>
+    </div>
+    <div class="dashboard-list dashboard-list-compact">
+      {% for item in team_enrollments %}
+        <div class="dashboard-link-row">
+          <strong>{{ item.course.title }}</strong>
+          <span>{{ item.learners.count }} learner{{ item.learners.count|pluralize }} · {{ item.created_at|date:"M j" }}</span>
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Bulk enrollments will appear here.</p>
+      {% endfor %}
+      {% for report in recent_reports %}
+        <a class="dashboard-link-row" href="{% url 'organizations:reports' %}">
+          <strong>{{ report.title }}</strong>
+          <span>Generated {{ report.generated_at|date:"M j" }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
 </div>
 {% endblock %}

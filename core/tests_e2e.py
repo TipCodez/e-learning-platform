@@ -87,3 +87,48 @@ class PlatformSmokeFlowTests(TestCase):
         self.assertEqual(enrollment.status, Enrollment.Status.COMPLETED)
 
 
+
+
+class DashboardRenderSmokeTests(TestCase):
+    def test_role_dashboards_render(self):
+        users_and_routes = [
+            (
+                CustomUser.objects.create_user(
+                    email="dashboard.student@example.com",
+                    password="Password12345",
+                    role=CustomUser.Role.STUDENT,
+                ),
+                reverse("dashboards:student"),
+            ),
+            (
+                CustomUser.objects.create_user(
+                    email="dashboard.instructor@example.com",
+                    password="Password12345",
+                    role=CustomUser.Role.INSTRUCTOR,
+                ),
+                reverse("dashboards:instructor"),
+            ),
+            (
+                CustomUser.objects.create_user(
+                    email="dashboard.organization@example.com",
+                    password="Password12345",
+                    role=CustomUser.Role.ORGANIZATION,
+                ),
+                reverse("dashboards:organization"),
+            ),
+            (
+                CustomUser.objects.create_user(
+                    email="dashboard.admin@example.com",
+                    password="Password12345",
+                    role=CustomUser.Role.ADMIN,
+                    is_staff=True,
+                ),
+                reverse("dashboards:admin"),
+            ),
+        ]
+        for user, url in users_and_routes:
+            with self.subTest(route=url):
+                self.client.force_login(user)
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()

@@ -1,14 +1,63 @@
 {% extends "dashboards/base_dashboard.html" %}
 {% block title %}Instructor Dashboard | Acadeval{% endblock %}
 {% block dashboard_content %}
-<h1 class="h2 text-slate">Instructor Dashboard</h1>
-<p class="text-muted">Create courses, manage learners, review submissions, and monitor revenue.</p>
-{% include "dashboards/partials/metrics.html" %}
-<div class="d-flex flex-wrap gap-2 mb-4">
+<div class="dashboard-heading">
+  <div>
+    <h1 class="h2 text-slate">Instructor Dashboard</h1>
+    <p class="text-muted">Create courses, manage learners, review submissions, and monitor revenue.</p>
+  </div>
   <a class="btn btn-primary" href="{% url 'courses:create' %}">Create Course</a>
+</div>
+{% include "dashboards/partials/metrics.html" %}
+<div class="dashboard-actions">
   <a class="btn btn-outline-primary" href="{% url 'courses:instructor_courses' %}">Manage Courses</a>
   <a class="btn btn-outline-primary" href="{% url 'dashboards:instructor_analytics' %}">Analytics</a>
   <a class="btn btn-outline-primary" href="{% url 'dashboards:instructor_earnings' %}">Earnings</a>
   <a class="btn btn-outline-primary" href="{% url 'assessments:submissions' %}">Grade Submissions{% if pending_submissions %} ({{ pending_submissions }}){% endif %}</a>
+</div>
+
+<div class="dashboard-grid">
+  <section class="dashboard-panel dashboard-panel-lg">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Courses</span>
+        <h2>Recent Course Activity</h2>
+      </div>
+      <a href="{% url 'courses:instructor_courses' %}">View all</a>
+    </div>
+    <div class="dashboard-list">
+      {% for course in recent_courses %}
+        <article class="dashboard-list-item">
+          <div>
+            <strong>{{ course.title }}</strong>
+            <span>{{ course.get_status_display }} · {{ course.learner_count }} learner{{ course.learner_count|pluralize }}</span>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'courses:edit' course.slug %}">Edit</a>
+        </article>
+      {% empty %}
+        <p class="text-muted mb-0">Create your first course to start building your catalog.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Queue</span>
+        <h2>Needs Grading</h2>
+      </div>
+      <a href="{% url 'assessments:submissions' %}">Open queue</a>
+    </div>
+    <div class="dashboard-list dashboard-list-compact">
+      {% for submission in pending_submission_rows %}
+        <a class="dashboard-link-row" href="{% url 'assessments:grade_submission' submission.id %}">
+          <strong>{{ submission.assignment.title }}</strong>
+          <span>{{ submission.student.get_full_name|default:submission.student.email }} · {{ submission.submitted_at|date:"M j" }}</span>
+        </a>
+      {% empty %}
+        <p class="text-muted mb-0">No pending submissions right now.</p>
+      {% endfor %}
+    </div>
+  </section>
 </div>
 {% endblock %}

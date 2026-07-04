@@ -1,8 +1,60 @@
 {% extends "dashboards/base_dashboard.html" %}
 {% block title %}Student Dashboard | Acadeval{% endblock %}
 {% block dashboard_content %}
-<h1 class="h2 text-slate">Student Dashboard</h1>
-<p class="text-muted">Track learning progress, achievements, certificates, quizzes, and recommended courses.</p>
+<div class="dashboard-heading">
+  <div>
+    <h1 class="h2 text-slate">Student Dashboard</h1>
+    <p class="text-muted">Track your active learning, progress, achievements, and next courses.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'courses:list' %}">Explore Courses</a>
+</div>
 {% include "dashboards/partials/metrics.html" %}
-{% include "dashboards/partials/empty_state.html" with title="No courses yet" text="Enroll in a course to start tracking progress and earning points." %}
+
+<div class="dashboard-grid">
+  <section class="dashboard-panel dashboard-panel-lg">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Learning</span>
+        <h2>Continue Learning</h2>
+      </div>
+      <a href="{% url 'enrollments:my_courses' %}">My courses</a>
+    </div>
+    {% if learning_rows %}
+      <div class="dashboard-list">
+        {% for row in learning_rows %}
+          <article class="dashboard-list-item">
+            <div>
+              <strong>{{ row.course.title }}</strong>
+              <span>{{ row.enrollment.get_status_display }}{% if row.enrollment.last_accessed_at %} · Last opened {{ row.enrollment.last_accessed_at|date:"M j" }}{% endif %}</span>
+              <div class="dashboard-progress"><span style="width: {{ row.progress.percentage|default:0 }}%"></span></div>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ row.course.get_absolute_url }}">Resume</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      {% include "dashboards/partials/empty_state.html" with title="No courses yet" text="Enroll in a course to start tracking progress and earning points." %}
+    {% endif %}
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Suggested</span>
+        <h2>Recommended</h2>
+      </div>
+      <a href="{% url 'courses:list' %}">Browse</a>
+    </div>
+    <div class="dashboard-list dashboard-list-compact">
+      {% for course in recommended_courses %}
+        <a class="dashboard-link-row" href="{{ course.get_absolute_url }}">
+          <strong>{{ course.title }}</strong>
+          <span>{{ course.get_level_display }}{% if course.category %} · {{ course.category.name }}{% endif %}</span>
+        </a>
+      {% empty %}
+        <p class="text-muted mb-0">New recommendations will appear as more courses are published.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
 {% endblock %}

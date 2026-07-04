@@ -9,7 +9,7 @@ from certificates.models import Certificate
 from courses.models import Course
 from enrollments.models import CourseProgress, Enrollment
 from gamification.models import Leaderboard, LearningStreak
-from organizations.models import OrganizationLearner
+from organizations.models import OrganizationEnrollment, OrganizationLearner, OrganizationReport
 from payments.forms import InstructorPayoutRequestForm
 from payments.models import InstructorPayout, Payment
 
@@ -37,7 +37,38 @@ def student_dashboard(request):
         ("Learning points", leaderboard.points if leaderboard else 0),
         ("Current streak", f"{streak.current_streak if streak else 0} days"),
     ]
-    return render(request, "dashboards/student.html", {"metrics": metrics})
+    recent_enrollments = list(
+        Enrollment.objects.select_related("course")
+        .filter(student=request.user)
+        .order_by("-last_accessed_at", "-enrolled_at")[:5]
+    )
+    progress_map = {
+        progress.enrollment_id: progress
+        for progress in CourseProgress.objects.filter(enrollment__in=recent_enrollments)
+    }
+    learning_rows = [
+        {
+            "enrollment": enrollment,
+            "course": enrollment.course,
+            "progress": progress_map.get(enrollment.id),
+        }
+        for enrollment in recent_enrollments
+    ]
+    recommended_courses = (
+        Course.objects.filter(status=Course.Status.PUBLISHED)
+        .exclude(enrollments__student=request.user)
+        .select_related("category", "instructor")
+        .order_by("-featured", "-created_at")[:3]
+    )
+    return render(
+        request,
+        "dashboards/student.html",
+        {
+            "metrics": metrics,
+            "learning_rows": learning_rows,
+            "recommended_courses": recommended_courses,
+        },
+    )
 
 
 @login_required
@@ -53,7 +84,22 @@ def instructor_dashboard(request):
         ("Enrolled learners", student_count),
         ("Revenue", f"GHS {revenue}"),
     ]
-    return render(request, "dashboards/instructor.html", {"metrics": metrics, "pending_submissions": pending_submissions})
+    recent_courses = courses.select_related("category").annotate(learner_count=Count("enrollments")).order_by("-updated_at")[:5]
+    pending_submission_rows = (
+        AssignmentSubmission.objects.select_related("assignment", "assignment__course", "student")
+        .filter(assignment__course__instructor=request.user, score__isnull=True)
+        .order_by("submitted_at")[:5]
+    )
+    return render(
+        request,
+        "dashboards/instructor.html",
+        {
+            "metrics": metrics,
+            "pending_submissions": pending_submissions,
+            "recent_courses": recent_courses,
+            "pending_submission_rows": pending_submission_rows,
+        },
+    )
 
 
 @login_required
@@ -124,7 +170,19 @@ def organization_dashboard(request):
         ("Certificates", Certificate.objects.filter(student_id__in=learner_ids).count()),
         ("Departments", learners.exclude(department="").values("department").distinct().count()),
     ]
-    return render(request, "dashboards/organization.html", {"metrics": metrics})
+    recent_learners = learners.select_related("learner").order_by("-added_at")[:5]
+    team_enrollments = OrganizationEnrollment.objects.select_related("course").filter(organization=request.user).order_by("-created_at")[:5]
+    recent_reports = OrganizationReport.objects.filter(organization=request.user).order_by("-generated_at")[:3]
+    return render(
+        request,
+        "dashboards/organization.html",
+        {
+            "metrics": metrics,
+            "recent_learners": recent_learners,
+            "team_enrollments": team_enrollments,
+            "recent_reports": recent_reports,
+        },
+    )
 
 
 @login_required
@@ -137,4 +195,10 @@ def admin_dashboard(request):
         ("Payments", f"GHS {revenue}"),
         ("Certificates", Certificate.objects.count()),
     ]
-    return render(request, "dashboards/admin.html", {"metrics": metrics})
+    pending_courses = Course.objects.select_related("instructor", "category").filter(status=Course.Status.PENDING).order_by("created_at")[:5]
+    recent_users = CustomUser.objects.order_by("-created_at")[:5]
+    return render(
+        request,
+        "dashboards/admin.html",
+        {"metrics": metrics, "pending_courses": pending_courses, "recent_users": recent_users},
+    )

@@ -1,12 +1,62 @@
 {% extends "dashboards/base_dashboard.html" %}
 {% block title %}Admin Dashboard | Acadeval{% endblock %}
 {% block dashboard_content %}
-<h1 class="h2 text-slate">Admin Dashboard</h1>
-<p class="text-muted">Moderate users, approve courses, monitor platform metrics, and manage settings.</p>
-{% include "dashboards/partials/metrics.html" %}
-<div class="d-flex flex-wrap gap-2 mb-4">
-  <a class="btn btn-primary" href="{% url 'courses:pending' %}">Review Pending Courses</a>
-  <a class="btn btn-outline-primary" href="/admin/">Open Django Admin</a>
+<div class="dashboard-heading">
+  <div>
+    <h1 class="h2 text-slate">Admin Dashboard</h1>
+    <p class="text-muted">Moderate users, approve courses, monitor platform metrics, and manage settings.</p>
+  </div>
+  <a class="btn btn-primary" href="/admin/">Open Django Admin</a>
 </div>
-{% include "dashboards/partials/empty_state.html" with title="Platform controls ready" text="Admin feature modules will be connected as courses, payments, and certificates are added." %}
+{% include "dashboards/partials/metrics.html" %}
+<div class="dashboard-actions">
+  <a class="btn btn-outline-primary" href="{% url 'courses:pending' %}">Review Pending Courses</a>
+  <a class="btn btn-outline-primary" href="{% url 'core:blog' %}">Review Blog</a>
+  <a class="btn btn-outline-primary" href="{% url 'core:search' %}">Search Platform</a>
+</div>
+
+<div class="dashboard-grid">
+  <section class="dashboard-panel dashboard-panel-lg">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Moderation</span>
+        <h2>Pending Courses</h2>
+      </div>
+      <a href="{% url 'courses:pending' %}">Open queue</a>
+    </div>
+    <div class="dashboard-list">
+      {% for course in pending_courses %}
+        <article class="dashboard-list-item">
+          <div>
+            <strong>{{ course.title }}</strong>
+            <span>{{ course.instructor.get_full_name|default:course.instructor.email }}{% if course.category %} · {{ course.category.name }}{% endif %}</span>
+          </div>
+          <a class="btn btn-sm btn-outline-primary" href="{{ course.get_absolute_url }}">Review</a>
+        </article>
+      {% empty %}
+        <p class="text-muted mb-0">No courses are waiting for review.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="dashboard-panel-header">
+      <div>
+        <span class="dashboard-eyebrow">Users</span>
+        <h2>Newest Accounts</h2>
+      </div>
+      <a href="/admin/accounts/customuser/">Manage</a>
+    </div>
+    <div class="dashboard-list dashboard-list-compact">
+      {% for account in recent_users %}
+        <a class="dashboard-link-row" href="/admin/accounts/customuser/{{ account.id }}/change/">
+          <strong>{{ account.get_full_name|default:account.email }}</strong>
+          <span>{{ account.get_role_display }} · {{ account.created_at|date:"M j" }}</span>
+        </a>
+      {% empty %}
+        <p class="text-muted mb-0">New accounts will appear here.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
 {% endblock %}
