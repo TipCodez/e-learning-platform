@@ -6,6 +6,7 @@ from certificates.models import Certificate
 from certificates.services import ensure_certificate_assets
 from gamification.models import Badge, Leaderboard, LearningStreak, PointsTransaction, UserBadge
 from notifications.models import Notification
+from notifications.services import notify_user
 
 
 LESSON_POINTS = 10
@@ -53,12 +54,12 @@ def _award_badges(user, total_points):
         user_badge, created = UserBadge.objects.get_or_create(user=user, badge=badge)
         if created:
             earned.append(user_badge)
-            Notification.objects.get_or_create(
-                user=user,
+            notify_user(
+                user,
                 title=f"Badge earned: {badge.name}",
+                message=f"You earned the {badge.name} badge.",
                 notification_type=Notification.Type.SYSTEM,
                 link=reverse("gamification:achievements"),
-                defaults={"message": f"You earned the {badge.name} badge."},
             )
     return earned
 
@@ -110,12 +111,12 @@ def record_quiz_passed(user, quiz):
         description=f"quiz_passed:{quiz.id}",
     )
     if transaction:
-        Notification.objects.get_or_create(
-            user=user,
+        notify_user(
+            user,
             title="Quiz passed",
+            message=f"You passed {quiz.title} and earned {QUIZ_PASS_POINTS} points.",
             notification_type=Notification.Type.SYSTEM,
             link=quiz.course.get_absolute_url(),
-            defaults={"message": f"You passed {quiz.title} and earned {QUIZ_PASS_POINTS} points."},
         )
     return transaction
 
@@ -129,12 +130,12 @@ def record_course_completion(request, enrollment):
         description=f"course_completed:{course.id}",
     )
     if course_transaction:
-        Notification.objects.get_or_create(
-            user=enrollment.student,
+        notify_user(
+            enrollment.student,
             title="Course completed",
+            message=f"You completed {course.title} and earned {COURSE_COMPLETION_POINTS} points.",
             notification_type=Notification.Type.SYSTEM,
             link=course.get_absolute_url(),
-            defaults={"message": f"You completed {course.title} and earned {COURSE_COMPLETION_POINTS} points."},
         )
 
     certificate = None
@@ -151,12 +152,12 @@ def record_course_completion(request, enrollment):
                 reason=PointsTransaction.Reason.CERTIFICATE_EARNED,
                 description=f"certificate_earned:{course.id}",
             )
-            Notification.objects.get_or_create(
-                user=enrollment.student,
+            notify_user(
+                enrollment.student,
                 title="Certificate earned",
+                message=f"Your certificate for {course.title} is ready.",
                 notification_type=Notification.Type.CERTIFICATE,
                 link=reverse("certificates:detail", kwargs={"certificate_id": certificate.certificate_id}),
-                defaults={"message": f"Your certificate for {course.title} is ready."},
             )
         ensure_certificate_assets(request, certificate)
     return certificate

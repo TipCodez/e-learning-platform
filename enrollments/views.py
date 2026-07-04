@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from courses.models import Course
 from enrollments.models import CourseProgress, Enrollment
+from notifications.models import Notification
+from notifications.services import notify_user
 
 
 @login_required
@@ -14,6 +16,21 @@ def enroll(request, slug):
         return redirect("payments:checkout", slug=slug)
     enrollment, created = Enrollment.objects.get_or_create(student=request.user, course=course)
     CourseProgress.objects.get_or_create(enrollment=enrollment)
+    if created:
+        notify_user(
+            request.user,
+            title="Course enrollment confirmed",
+            message=f"You are enrolled in {course.title}.",
+            notification_type=Notification.Type.ENROLLMENT,
+            link=course.get_absolute_url(),
+        )
+        notify_user(
+            course.instructor,
+            title="New learner enrolled",
+            message=f"{request.user.email} enrolled in {course.title}.",
+            notification_type=Notification.Type.ENROLLMENT,
+            link=course.get_absolute_url(),
+        )
     messages.success(request, "You are enrolled." if created else "You are already enrolled.")
     return redirect("courses:detail", slug=slug)
 
@@ -28,3 +45,4 @@ def my_courses(request):
 def continue_learning(request):
     enrollments = Enrollment.objects.select_related("course").filter(student=request.user, status=Enrollment.Status.ACTIVE)
     return render(request, "enrollments/continue_learning.html", {"enrollments": enrollments})
+

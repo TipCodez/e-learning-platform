@@ -11,6 +11,8 @@ from courses.forms import CourseForm, LessonContentBlockForm, LessonForm, Module
 from courses.models import Category, Course, Lesson, LessonContentBlock, LessonNote, Module, WishlistItem
 from enrollments.models import CourseProgress, Enrollment, LessonProgress
 from gamification.services import record_course_completion, record_lesson_completion
+from notifications.models import Notification
+from notifications.services import notify_user
 
 
 def course_list(request):
@@ -189,6 +191,13 @@ def approve_course(request, slug):
     course.approved_at = timezone.now()
     course.rejection_reason = ""
     course.save(update_fields=["status", "approved_at", "rejection_reason", "updated_at"])
+    notify_user(
+        course.instructor,
+        title="Course approved",
+        message=f"{course.title} has been approved and published.",
+        notification_type=Notification.Type.INSTRUCTOR_APPROVAL,
+        link=course.get_absolute_url(),
+    )
     messages.success(request, "Course approved and published.")
     return redirect("courses:pending")
 
@@ -205,6 +214,13 @@ def reject_course(request, slug):
     course.status = Course.Status.REJECTED
     course.rejection_reason = request.POST.get("reason", "Needs revision.")
     course.save(update_fields=["status", "rejection_reason", "updated_at"])
+    notify_user(
+        course.instructor,
+        title="Course needs revision",
+        message=f"{course.title} was rejected. Feedback: {course.rejection_reason}",
+        notification_type=Notification.Type.INSTRUCTOR_APPROVAL,
+        link=course.get_absolute_url(),
+    )
     messages.success(request, "Course rejected with feedback.")
     return redirect("courses:pending")
 
@@ -455,3 +471,4 @@ def mark_lesson_complete(request, slug, lesson_id):
         record_course_completion(request, enrollment)
     messages.success(request, "Lesson marked complete.")
     return redirect("courses:lesson", slug=slug, lesson_id=lesson_id)
+

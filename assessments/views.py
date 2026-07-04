@@ -9,6 +9,7 @@ from assessments.models import AnswerOption, Assignment, AssignmentSubmission, Q
 from enrollments.models import Enrollment
 from gamification.services import record_quiz_passed
 from notifications.models import Notification
+from notifications.services import notify_user
 
 
 def _can_access_course(user, course):
@@ -71,12 +72,12 @@ def assignment_detail(request, assignment_id):
             submission.assignment = assignment
             submission.student = request.user
             submission.save()
-            Notification.objects.get_or_create(
-                user=assignment.course.instructor,
+            notify_user(
+                assignment.course.instructor,
                 title="Assignment submitted",
+                message=f"{request.user.email} submitted {assignment.title}.",
                 notification_type=Notification.Type.ASSIGNMENT_FEEDBACK,
                 link=reverse("assessments:grade_submission", kwargs={"submission_id": submission.id}),
-                defaults={"message": f"{request.user.email} submitted {assignment.title}."},
             )
             messages.success(request, "Assignment submitted.")
             return redirect("assessments:assignment", assignment_id=assignment.id)
@@ -115,12 +116,12 @@ def grade_submission(request, submission_id):
         graded.graded_by = request.user
         graded.graded_at = timezone.now()
         graded.save()
-        Notification.objects.get_or_create(
-            user=graded.student,
+        notify_user(
+            graded.student,
             title="Assignment graded",
+            message=f"Your submission for {graded.assignment.title} was graded.",
             notification_type=Notification.Type.ASSIGNMENT_FEEDBACK,
             link=reverse("assessments:assignment", kwargs={"assignment_id": graded.assignment_id}),
-            defaults={"message": f"Your submission for {graded.assignment.title} was graded."},
         )
         messages.success(request, "Submission graded.")
         return redirect("assessments:submissions")
