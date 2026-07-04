@@ -1,4 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Bulk Add Learners</h1>{% if result %}<div class="alert alert-success">Processed {{ result.attached }} learners. Created {{ result.created_users }} new learner accounts.</div>{% endif %}<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Process Learners</button></form></div></section>
+<section class="auth-section"><div class="auth-card wide"><h1 class="h2 text-slate">Bulk Add Learners</h1>{% if result %}<div class="alert alert-success">Processed {{ result.attached }} learners. Created {{ result.created_users }} new learner accounts and sent {{ result.setup_emails_sent }} password setup email{{ result.setup_emails_sent|pluralize }}.</div>{% endif %}<form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Process Learners</button></form></div></section>
 {% endblock %}
+

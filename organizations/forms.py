@@ -22,7 +22,7 @@ class BulkLearnerUploadForm(forms.Form):
     emails = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 7, "placeholder": "one learner email per line"}),
-        help_text="Existing users are attached. Missing users are created as learner accounts with unusable passwords.",
+        help_text="Existing users are attached. Missing users are created securely and emailed a password setup link.",
     )
     upload = forms.FileField(
         required=False,
@@ -67,3 +67,4 @@ class OrganizationEnrollmentForm(forms.Form):
         super().__init__(*args, **kwargs)
         records = OrganizationLearner.objects.select_related("learner").filter(organization=organization, active=True) if organization else []
         self.fields["learners"].choices = [(record.learner_id, record.learner.email) for record in records]
+

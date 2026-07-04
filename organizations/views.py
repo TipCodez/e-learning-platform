@@ -13,6 +13,7 @@ from django.utils.text import slugify
 from enrollments.models import CourseProgress, Enrollment
 from organizations.forms import BulkLearnerUploadForm, OrganizationEnrollmentForm, OrganizationLearnerForm
 from organizations.models import OrganizationEnrollment, OrganizationLearner, OrganizationReport
+from accounts.tokens import send_password_setup_email
 
 
 User = get_user_model()
@@ -64,6 +65,7 @@ def bulk_learners(request):
     if request.method == "POST" and form.is_valid():
         created_users = 0
         attached = 0
+        setup_emails_sent = 0
         for email in form.cleaned_data["emails"]:
             learner = User.objects.filter(email__iexact=email).first()
             if not learner:
@@ -71,13 +73,14 @@ def bulk_learners(request):
                 learner.set_unusable_password()
                 learner.save(update_fields=["password"])
                 created_users += 1
+                setup_emails_sent += send_password_setup_email(request, learner, organization=request.user)
             OrganizationLearner.objects.update_or_create(
                 organization=request.user,
                 learner=learner,
                 defaults={"department": form.cleaned_data["department"], "active": form.cleaned_data["active"]},
             )
             attached += 1
-        result = {"attached": attached, "created_users": created_users}
+        result = {"attached": attached, "created_users": created_users, "setup_emails_sent": setup_emails_sent}
         messages.success(request, f"Processed {attached} learners.")
     return render(request, "organizations/bulk_learners.html", {"form": form, "result": result})
 
@@ -182,3 +185,4 @@ def export_report(request):
                 enrollment.completed_at or "",
             ])
     return response
+
